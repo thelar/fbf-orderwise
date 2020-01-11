@@ -59,11 +59,8 @@ class Fbf_Order_Wise_Api
 
     public function processEndPointXML($request)
     {
-
-
-
         global $wpdb;
-        $endpoint = 'api/v2/orderwise_export';
+        $endpoint = 'orderwise_export';
         $table_name = $wpdb->prefix . 'fbf_orderwise_log';
         $inserted = $wpdb->insert(
             $table_name,
@@ -146,7 +143,7 @@ class Fbf_Order_Wise_Api
         //mail('kevin@code-mill.co.uk', 'process OW imports', 'script has been hit');
 
         global $wpdb;
-        $endpoint = 'api/v2/orderwise_success';
+        $endpoint = 'orderwise_success';
         $table_name = $wpdb->prefix . 'fbf_orderwise_log';
         $inserted = $wpdb->insert(
             $table_name,
@@ -196,7 +193,7 @@ class Fbf_Order_Wise_Api
         $email = 'kevin@code-mill.co.uk';
 
         global $wpdb;
-        $endpoint = 'api/v2/orderwise_dispatch';
+        $endpoint = 'orderwise_dispatch';
         $table_name = $wpdb->prefix . 'fbf_orderwise_log';
         $inserted = $wpdb->insert(
             $table_name,
