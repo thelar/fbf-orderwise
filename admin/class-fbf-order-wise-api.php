@@ -60,6 +60,20 @@ class Fbf_Order_Wise_Api
     public function processEndPointXML($request)
     {
 
+
+
+        global $wpdb;
+        $endpoint = 'api/v2/orderwise_export';
+        $table_name = $wpdb->prefix . 'fbf_orderwise_log';
+        $inserted = $wpdb->insert(
+            $table_name,
+            [
+                'starttime' => date('Y-m-d H:i:s', time()),
+                'endpoint' => $endpoint,
+                'log' => json_encode($request)
+            ]
+        );
+
         // auth checks
 
         // get the latest export id
@@ -131,6 +145,18 @@ class Fbf_Order_Wise_Api
     {
         //mail('kevin@code-mill.co.uk', 'process OW imports', 'script has been hit');
 
+        global $wpdb;
+        $endpoint = 'api/v2/orderwise_success';
+        $table_name = $wpdb->prefix . 'fbf_orderwise_log';
+        $inserted = $wpdb->insert(
+            $table_name,
+            [
+                'starttime' => date('Y-m-d H:i:s', time()),
+                'endpoint' => $endpoint,
+                'log' => $_POST['ExportData']
+            ]
+        );
+
         try {
             // dev
             // $post_received = '12345~17~19';
@@ -168,6 +194,18 @@ class Fbf_Order_Wise_Api
         //mail('kevin@code-mill.co.uk', 'process OW dispatch', 'script has been hit');
         $subject = '4x4 Order status update';
         $email = 'kevin@code-mill.co.uk';
+
+        global $wpdb;
+        $endpoint = 'api/v2/orderwise_dispatch';
+        $table_name = $wpdb->prefix . 'fbf_orderwise_log';
+        $inserted = $wpdb->insert(
+            $table_name,
+            [
+                'starttime' => date('Y-m-d H:i:s', time()),
+                'endpoint' => $endpoint,
+                'log' => $_POST['ExportData']
+            ]
+        );
 
         try {
             // receive POST var of tilda separated order numbers
