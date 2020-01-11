@@ -38,6 +38,11 @@ if ( ! defined( 'WPINC' ) ) {
 define( 'FBF_ORDER_WISE_VERSION', '1.0.0' );
 
 /**
+ * Current database version.
+ */
+define( 'FBF_ORDER_WISE_DB_VERSION', '1.0.0' );
+
+/**
  * The code that runs during plugin activation.
  * This action is documented in includes/class-fbf-order-wise-activator.php
  */
