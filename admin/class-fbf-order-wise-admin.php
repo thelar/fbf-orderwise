@@ -195,7 +195,6 @@ class Fbf_Order_Wise_Admin
         }
 
 
-
         //Extract white lettering info
         $msg = '';
         foreach ($order->get_items() as $item_id => $item_data) {
