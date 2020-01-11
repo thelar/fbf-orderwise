@@ -70,6 +70,17 @@ class Fbf_Order_Wise_Api
                 'log' => json_encode($request)
             ]
         );
+        if($inserted){
+            $response_update = $wpdb->update(
+                $table_name,
+                [
+                    'response' => 'OK'
+                ],
+                [
+                    'id' => $wpdb->insert_id
+                ]
+            );
+        }
 
         // auth checks
 
@@ -140,8 +151,6 @@ class Fbf_Order_Wise_Api
 
     public function processEndPointResponse()
     {
-        //mail('kevin@code-mill.co.uk', 'process OW imports', 'script has been hit');
-
         global $wpdb;
         $endpoint = 'orderwise_success';
         $table_name = $wpdb->prefix . 'fbf_orderwise_log';
@@ -176,22 +185,38 @@ class Fbf_Order_Wise_Api
                 if ($order) {
                     $order->update_status('imported');
                     $completed[] = $order_id;
+                    $response['completed'][] = $order_id;
                 } else {
                     $failed[] = $order_id;
+                    $response['failed'][] = $order_id;
                 }
+                $response['status'] = 'OK';
             }
 
         } catch (exception $e) {
             //code to handle the exception
+            $response['status'] = 'error';
+            $response['error'] = $e->getMessage();
+        }
+        ob_start();
+        print_r($response);
+        $response_text = ob_get_clean();
+
+        if($inserted){
+            $response_update = $wpdb->update(
+                $table_name,
+                [
+                    'response' => $response_text
+                ],
+                [
+                    'id' => $wpdb->insert_id
+                ]
+            );
         }
     }
 
     public function processEndPointDispatch()
     {
-        //mail('kevin@code-mill.co.uk', 'process OW dispatch', 'script has been hit');
-        $subject = '4x4 Order status update';
-        $email = 'kevin@code-mill.co.uk';
-
         global $wpdb;
         $endpoint = 'orderwise_dispatch';
         $table_name = $wpdb->prefix . 'fbf_orderwise_log';
@@ -204,16 +229,13 @@ class Fbf_Order_Wise_Api
             ]
         );
 
+        ob_start();
+
         try {
             // receive POST var of tilda separated order numbers
             $post_received = $_POST['ExportData'];
-
-            ob_start();
-
             $errors = [];
             $success = [];
-
-
 
             $xml = new SimpleXMLElement($post_received);
             foreach($xml->orders->order as $orderxml){
@@ -268,27 +290,33 @@ class Fbf_Order_Wise_Api
                 }
             }
 
-            echo '<h3>Completed:</h3>';
-            echo '<pre>';
-            print_r($success);
-            echo '</pre>';
+            $response['status'] = 'OK';
+            $response['order_errors'] = $errors;
+            $response['order_success'] = $success;
 
-            echo '<h3>Errors:</h3>';
-            echo '<pre>';
-            print_r($errors);
-            echo '</pre>';
-
-            $msg = ob_get_clean();
-
-
-            // Always set content-type when sending HTML email
-            $headers = "MIME-Version: 1.0" . "\r\n";
-            $headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
 
             //mail($email, $subject, $msg, $headers);
 
         } catch (exception $e) {
+            //code to handle the exception
+            $response['status'] = 'error';
+            $response['error'] = $e->getMessage();
+        }
 
+        print_r($response);
+        $response_text = ob_get_clean();
+
+
+        if($inserted){
+            $response_update = $wpdb->update(
+                $table_name,
+                [
+                    'response' => $response_text
+                ],
+                [
+                    'id' => $wpdb->insert_id
+                ]
+            );
         }
     }
 

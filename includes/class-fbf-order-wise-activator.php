@@ -46,6 +46,7 @@ class Fbf_Order_Wise_Activator {
           starttime datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
           endpoint varchar(20),
           log mediumtext NOT NULL,
+          response mediumtext NOT NULL,
           PRIMARY KEY  (id)
         ) $charset_collate;";
 
