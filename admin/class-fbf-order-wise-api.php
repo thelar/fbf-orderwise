@@ -275,6 +275,10 @@ class Fbf_Order_Wise_Api
                                 $errors[$order_num][] = 'Could not update status to ' . $order_status;
                             }
 
+                            if(!empty($this->has_delivery($orderxml->deliveries))){
+                                $order->add_order_note($this->get_delivery_note($orderxml->deliveries), true);
+                            }
+
                             /*if(!empty($this->get_delivery_note($orderxml->deliveries))){
                                 $order->add_order_note($orderxml->deliveries);
                             }*/
@@ -345,11 +349,15 @@ class Fbf_Order_Wise_Api
     private function has_delivery($deliveriesXML)
     {
         $has_delivery = false;
+        /*
         foreach($deliveriesXML as $delivery){
             if(is_array($delivery)){
                 $has_delivery = true;
                 break;
             }
+        }*/
+        if(key_exists('deliveryNumber', $deliveriesXML)&&!empty((string)$deliveriesXML->deliveryNumber)){
+            $has_delivery = true;
         }
         return $has_delivery;
     }
