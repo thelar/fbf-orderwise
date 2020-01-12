@@ -198,10 +198,10 @@ class Fbf_Order_Wise_Admin
         //Extract white lettering info
         $msg = '';
         foreach ($order->get_items() as $item_id => $item_data) {
-            $product = $order->get_product_from_item($item_data);
+            //$product = $order->get_product_from_item($item_data);
 
-            if(strpos($product->get_name(), 'White Lettering')){
-                $msg.= $product->get_name() . '\r\n';
+            if(strpos($item_data->get_name(), 'White Lettering')){
+                $msg.= $item_data->get_name() . '\r\n';
             }
         }
         $msg.= $order->get_customer_note();
