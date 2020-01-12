@@ -238,7 +238,7 @@ class Fbf_Order_Wise_Api
             $success = [];
 
             $xml = new SimpleXMLElement($post_received);
-            foreach($xml->orders->order as $orderxml){
+            foreach($xml->order as $orderxml){
                 $order_num = (string)$orderxml->orderNo;
                 $order_status = (string)$orderxml->orderStatus;
 
@@ -259,9 +259,9 @@ class Fbf_Order_Wise_Api
                                 $errors[$order_num][] = 'Could not update status to ' . $order_status;
                             }
 
-                            if(!empty($this->get_delivery_note($orderxml->deliveries))){
+                            /*if(!empty($this->has_delivery($orderxml->deliveries))){
                                 $order->add_order_note($this->get_delivery_note($orderxml->deliveries));
-                            }
+                            }*/
 
                         }else{
                             $errors[$order_num][] = 'Order status is already awaiting-despatch';
@@ -275,9 +275,9 @@ class Fbf_Order_Wise_Api
                                 $errors[$order_num][] = 'Could not update status to ' . $order_status;
                             }
 
-                            if(!empty($this->get_delivery_note($orderxml->deliveries))){
+                            /*if(!empty($this->get_delivery_note($orderxml->deliveries))){
                                 $order->add_order_note($orderxml->deliveries);
-                            }
+                            }*/
 
                         }else{
                             $errors[$order_num][] = 'Order status is already completed';
@@ -340,6 +340,18 @@ class Fbf_Order_Wise_Api
             }
         }
         return $delivery_note;
+    }
+
+    private function has_delivery($deliveriesXML)
+    {
+        $has_delivery = false;
+        foreach($deliveriesXML as $delivery){
+            if(is_array($delivery)){
+                $has_delivery = true;
+                break;
+            }
+        }
+        return $has_delivery;
     }
 
     // find last entry which starts with wc_customer_order_export_background_export_job_
