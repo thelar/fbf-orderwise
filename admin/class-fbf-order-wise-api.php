@@ -338,7 +338,7 @@ class Fbf_Order_Wise_Api
             $del_courier_name = (string)$delivery->courierName;
 
             $delivery_note.= sprintf('Delivery number: %s' . PHP_EOL, $del_num);
-            $delivery_note.= sprintf('Delivery date: %s' . PHP_EOL, $del_date);
+            $delivery_note.= sprintf('Dispatch date: %s' . PHP_EOL, $del_date);
             $delivery_note.= sprintf('Courier: %s' . PHP_EOL, $del_courier_name);
 
             foreach($delivery->consignmentNumbers as $consignmentNumber){
