@@ -268,7 +268,7 @@ class Fbf_Order_Wise_Admin
                     'CountryCode' => $order->get_shipping_country(),
                     'Postcode' => $order->get_shipping_postcode(),
                     'Email' => $order->billing_email,
-                    'Telephone' => '',
+                    'Telephone' => $order->billing_phone,
                     'SpecialInstructions' => $msg
                 ]
             ],
