@@ -259,7 +259,7 @@ class Fbf_Order_Wise_Admin
                 ],
                 'DeliveryAddress' => [
                     'Name' => $order->get_formatted_shipping_full_name(),
-                    'Contact' => '',
+                    'Contact' => $order->get_formatted_shipping_full_name(),
                     'Address1' => $order->get_shipping_address_1(),
                     'Address2' => $order->get_shipping_address_2(),
                     'Town' => $order->get_shipping_city(),
