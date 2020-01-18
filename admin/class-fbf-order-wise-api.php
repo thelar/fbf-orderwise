@@ -283,6 +283,47 @@ class Fbf_Order_Wise_Api
                                 $order->add_order_note($this->get_delivery_note($orderxml->deliveries), true);
                             }
 
+                            //If it's a Deko order we will need to send the tracking code to Deko and mark as fulfilled here
+                            if($order->get_payment_method()==='boots_dekopay'){
+                                $update_deko = true;
+                                if(WP_ENV==='production'){
+                                    $interface = 'https://secure.dekopay.com:6686/';
+                                    $api_key = 'ee7fc0aadde5c346ad103d24aa22a783';
+                                }else{
+                                    $interface = 'https://test.dekopay.com:3343/';
+                                    $api_key = '1828a18b1e9ab1b809ba9891a7efa940';
+                                }
+
+                                $postFields = Array(
+                                    "api_key" => $api_key,
+                                    "cr_id" => $order->get_meta('_fbf_deko_cr_id'),
+                                    "new_state" => 'fulfilled',
+                                    "fulfilment_ref" => (string)$xml->order->deliveries->consignmentNumbers->consignmentNumber,
+                                );
+
+                                $curlSession = curl_init();
+                                curl_setopt($curlSession, CURLOPT_URL, $interface);
+                                curl_setopt($curlSession, CURLOPT_HEADER, 0);
+                                curl_setopt($curlSession, CURLOPT_SSL_VERIFYPEER, 0);
+                                curl_setopt($curlSession, CURLOPT_POST, 1);
+                                curl_setopt($curlSession, CURLOPT_POSTFIELDS, $postFields);
+                                curl_setopt($curlSession, CURLOPT_RETURNTRANSFER, 1);
+                                curl_setopt($curlSession, CURLOPT_TIMEOUT, 180);
+                                curl_setopt($curlSession, CURLOPT_FOLLOWLOCATION, 1);
+                                $curlResponse = curl_exec($curlSession);
+
+                                if($curlResponse){
+                                    $response_xml = new SimpleXMLElement($curlResponse);
+                                    if($response_xml->ERROR){
+                                        $deko_response = 'Deko order could not be FULFIILLED';
+                                    }else{
+                                        $deko_response = 'Deko order FULFILLED';
+                                    }
+                                }else{
+                                    $deko_response = 'cURL failed - could not talk to Deko';
+                                }
+                            }
+
                             /*if(!empty($this->get_delivery_note($orderxml->deliveries))){
                                 $order->add_order_note($orderxml->deliveries);
                             }*/
@@ -326,6 +367,24 @@ class Fbf_Order_Wise_Api
                 ]
             );
         }
+
+        //Log deko response if necessary
+        if($update_deko){
+            ob_start();
+            print_r($curlResponse);
+            $log = ob_get_clean();
+
+
+            $deko_insert = $wpdb->insert(
+                $table_name,
+                [
+                    'starttime' => date('Y-m-d H:i:s', time()),
+                    'endpoint' => 'deko_fulfillment',
+                    'log' => $log,
+                    'response' => $deko_response,
+                ]
+            );
+        }
     }
 
     private function get_delivery_note($deliveries)
@@ -342,7 +401,7 @@ class Fbf_Order_Wise_Api
             $delivery_note.= sprintf('Courier: %s' . PHP_EOL, $del_courier_name);
 
             foreach($delivery->consignmentNumbers as $consignmentNumber){
-                $del_consignment_num = (string)$consignmentNumber;
+                $del_consignment_num = (string)$consignmentNumber->consignmentNumber;
 
                 $delivery_note.= sprintf('Consignment: %s' . PHP_EOL, $del_consignment_num);
             }
