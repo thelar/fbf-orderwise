@@ -276,9 +276,30 @@ class Fbf_Order_Wise_Admin
             'PricesAsNet' => 'true',
         ];
 
+        switch($order->get_payment_method()){
+            case 'boots_dekopay':
+                $payment_method = 'Pay4Later';
+                break;
+            case 'stripe':
+                $payment_method = 'stripe';
+                break;
+            case 'paypal':
+                $payment_method = 'Paypal';
+                break;
+            case 'sagepaydirect':
+                $payment_method = 'Sage Pay Credit Card';
+                break;
+            case 'klarna':
+                $payment_method = 'Klarna';
+                break;
+            default:
+                $payment_method = 'unrecognised';
+                break;
+        }
+
         $new_format['Payments'] = [
             'SalesPayment' => [
-                'Description' => $order->get_payment_method(),
+                'Description' => $payment_method,
                 'Amount' => $order->get_total()
             ]
         ];
