@@ -278,11 +278,11 @@ class Fbf_Order_Wise_Admin
             'PricesAsNet' => 'true',
         ];
 
-        $payment_methods = WC()->payment_gateways()->get_available_payment_gateways();
-        ob_start();
-        print_r($payment_methods);
-        $msg = ob_get_clean();
-        mail('kevin@code-mill.co.uk', 'payment gateways', $msg);
+//        $payment_methods = WC()->payment_gateways()->get_available_payment_gateways();
+//        ob_start();
+//        print_r($payment_methods);
+//        $msg = ob_get_clean();
+//        mail('kevin@code-mill.co.uk', 'payment gateways', $msg);
 
 
         switch($order->get_payment_method()){
@@ -308,7 +308,7 @@ class Fbf_Order_Wise_Admin
 
         $new_format['Payments'] = [
             'SalesPayment' => [
-                'Description' => $payment_method,
+                'Description' => $order->get_payment_method(),
                 'Amount' => $order->get_total()
             ]
         ];
