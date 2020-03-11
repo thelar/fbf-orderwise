@@ -207,6 +207,8 @@ class Fbf_Order_Wise_Admin
         $msg.= $order->get_customer_note();
 
 
+
+
         // create XML feed
         $new_format = [
             // 'OrderNumber' => get_post_meta($order->id, '_order_number', true),
@@ -276,6 +278,13 @@ class Fbf_Order_Wise_Admin
             'PricesAsNet' => 'true',
         ];
 
+        $payment_methods = WC()->payment_gateways()->get_available_payment_gateways();
+        ob_start();
+        print_r($payment_methods);
+        $msg = ob_get_clean();
+        mail('kevin@code-mill.co.uk', 'payment gateways', $msg);
+
+
         switch($order->get_payment_method()){
             case 'boots_dekopay':
                 $payment_method = 'Pay4Later';
@@ -333,7 +342,43 @@ class Fbf_Order_Wise_Admin
                 'ItemNet' => round($price_exc_tax, 2),
                 'TaxCode' => $tax_code
             ];
+
+            //Is it a tyre
+            $cats = $product->get_category_ids();
+            $tyre_items = [];
+            if(!empty($cats)){
+                foreach($cats as $cat){
+                    $cat_term = get_term_by('id', $cat, 'product_cat');
+                    if($cat_term->slug == 'tyre'){
+                        $tyre_items[] = $item_id;
+                    }
+                }
+            }
         }
+
+        if(count($tyre_items)==count($items['SalesOrderLine'])){
+            //Here if all items are tyres
+            //Need to check here if items are all in stock with Southam
+            $main_supplier_id = 88; //Micheldever??
+            $i = 0;
+            $instock_at_main_supplier = true;
+            foreach($items['SalesOrderLine'] as $tyre){
+                $product_id = wc_get_product_id_by_sku($tyre['eCommerceCode']);
+                $suppliers = get_post_meta($product_id, '_stockist_lead_times', true);
+                if(isset($suppliers[$main_supplier_id])){
+                    if((int)$tyre['Quantity'] >= $suppliers[$main_supplier_id]['stock']){
+                        $instock_at_main_supplier = false;
+                    }
+                }
+                $i++;
+            }
+
+            if($instock_at_main_supplier){
+                //This is where we will add the XML to new_format
+            }
+        }
+
+
 
         $new_format['Lines'] = $items;
 
