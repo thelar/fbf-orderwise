@@ -298,7 +298,7 @@ class Fbf_Order_Wise_Admin
             case 'sagepaydirect':
                 $payment_method = 'Sage Pay Credit Card';
                 break;
-            case 'klarna':
+            case 'klarna_payments':
                 $payment_method = 'Klarna';
                 break;
             default:
@@ -308,7 +308,7 @@ class Fbf_Order_Wise_Admin
 
         $new_format['Payments'] = [
             'SalesPayment' => [
-                'Description' => $order->get_payment_method(),
+                'Description' => $payment_method,
                 'Amount' => $order->get_total()
             ]
         ];
