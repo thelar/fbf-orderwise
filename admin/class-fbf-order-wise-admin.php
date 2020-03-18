@@ -206,8 +206,9 @@ class Fbf_Order_Wise_Admin
         }
         $msg.= $order->get_customer_note();
 
-
-
+        //Name is either the company name or if not set the persons name
+        $name = $order->get_billing_company()?:$order->get_formatted_billing_full_name();
+        $shipping_name = $order->get_shipping_company()?:'';
 
         // create XML feed
         $new_format = [
@@ -230,7 +231,7 @@ class Fbf_Order_Wise_Admin
             'TakenBy' => $taken_by,
             'Customer' => [
                 'eCommerceAccountNumber' => '',
-                'StatementName' => $order->get_formatted_billing_full_name(),
+                'StatementName' => $name,
                 'StatementAddress1' => $order->billing_address_1,
                 'StatementAddress2' => $order->billing_address_2,
                 'StatementTown' => $order->billing_city,
@@ -240,7 +241,7 @@ class Fbf_Order_Wise_Admin
                 'StatementPostcode' => $order->billing_postcode,
                 'StatementEmail' => $order->billing_email,
                 'StatementTelephone' => '',
-                'InvoiceName' => $order->get_formatted_billing_full_name(),
+                'InvoiceName' => $name,
                 'InvoiceAddress1' => $order->billing_address_1,
                 'InvoiceAddress2' => $order->billing_address_2,
                 'InvoiceTown' => $order->billing_city,
@@ -261,7 +262,7 @@ class Fbf_Order_Wise_Admin
                     'Salutation' => ''
                 ],
                 'DeliveryAddress' => [
-                    'Name' => $order->get_formatted_shipping_full_name(),
+                    'Name' => $shipping_name,
                     'Contact' => $order->get_formatted_shipping_full_name(),
                     'Address1' => $order->get_shipping_address_1(),
                     'Address2' => $order->get_shipping_address_2(),
