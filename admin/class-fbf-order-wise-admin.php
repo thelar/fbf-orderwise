@@ -208,7 +208,20 @@ class Fbf_Order_Wise_Admin
 
         //Name is either the company name or if not set the persons name
         $name = $order->get_billing_company()?:$order->get_formatted_billing_full_name();
-        $shipping_name = $order->get_shipping_company()?:'';
+        $shipping_name = $order->get_shipping_company()?:$order->get_formatted_shipping_full_name();
+
+        //Shipping
+        switch($order->get_shipping_method()) {
+            case 'International economy':
+                $shipping_method = 'FedEx International economy';
+                break;
+            case 'International economy freight':
+                $shipping_method = 'FedEx International economy freight';
+                break;
+            default:
+                $shipping_method = $order->get_shipping_method();
+                break;
+        }
 
         // create XML feed
         $new_format = [
@@ -219,7 +232,7 @@ class Fbf_Order_Wise_Admin
             'SpecialDeliveryInstructions' => $msg,
             'SpecialInstructions' => $msg,
             'CustomerOrderRef' => $order->get_id(),
-            'DeliveryMethod' => $order->get_shipping_method(),
+            'DeliveryMethod' => $shipping_method,
             'DeliveryGross' => $order->get_shipping_total() + $order->get_shipping_tax(),
             'DeliveryNet' => $order->get_shipping_total(),
             'DeliveryTax' => $order->get_shipping_tax(),
@@ -384,7 +397,7 @@ class Fbf_Order_Wise_Admin
         $new_format['Lines'] = $items;
 
         //Add delivery cost for FedEx orders
-        if(strpos($order->get_shipping_method(), 'FedEx')!==false){
+        if(strpos($shipping_method, 'FedEx')!==false){
            $new_format['DeliveryCost'] = $shipping_gross;
         }
 
