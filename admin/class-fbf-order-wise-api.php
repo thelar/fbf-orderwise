@@ -114,6 +114,10 @@ class Fbf_Order_Wise_Api
             $node->parentNode->removeChild($node);
         }
         $xml = $dom->saveXML();
+        /*echo '<pre>';
+        var_dump($xml);
+        echo '</pre>';
+        die();*/
 
 
         // check export
@@ -135,16 +139,17 @@ class Fbf_Order_Wise_Api
         header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
         header('Pragma: public');
 
-        $file_size = $export->get_file_size();
+        /*$file_size = $export->get_file_size();
 
         if ($file_size && 0 < $file_size) {
             header('Content-Length: ' . $file_size);
-        }
+        }*/
 
         $output_resource = fopen('php://output', 'w');
         //echo $xml;
 
-        $export->stream_output_to_resource($output_resource);
+        //$export->stream_output_to_resource($output_resource);
+        echo $dom->saveXML();
 
         fclose($output_resource);
     }
