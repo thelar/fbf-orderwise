@@ -330,8 +330,10 @@ class Fbf_Order_Wise_Admin
 
 
         // Line Items
+        $tyre_items = [];
         foreach ($order->get_items() as $item_id => $item_data) {
             $product = $order->get_product_from_item($item_data);
+            $product_id = $product->get_parent_id()?:$product->get_id();
             $taxes = $order->get_taxes();
             $price_inc_tax = $product->get_regular_price();
             $price_exc_tax = $product->get_regular_price();
@@ -358,40 +360,50 @@ class Fbf_Order_Wise_Admin
             ];
 
             //Is it a tyre
-            $cats = $product->get_category_ids();
-            $tyre_items = [];
+            $cats = get_the_terms($product_id, 'product_cat');
+
             if(!empty($cats)){
                 foreach($cats as $cat){
-                    $cat_term = get_term_by('id', $cat, 'product_cat');
-                    if($cat_term->slug == 'tyre'){
+                    if($cat->slug == 'tyre'){
                         $tyre_items[] = $item_id;
                     }
                 }
             }
         }
 
-        if(count($tyre_items)==count($items['SalesOrderLine'])){
-            //Here if all items are tyres
-            //Need to check here if items are all in stock with Southam
-            $main_supplier_id = 88; //Micheldever??
-            $i = 0;
-            $instock_at_main_supplier = true;
-            foreach($items['SalesOrderLine'] as $tyre){
-                $product_id = wc_get_product_id_by_sku($tyre['eCommerceCode']);
-                $suppliers = get_post_meta($product_id, '_stockist_lead_times', true);
-                if(isset($suppliers[$main_supplier_id])){
-                    if((int)$tyre['Quantity'] >= $suppliers[$main_supplier_id]['stock']){
+        if(strpos($shipping_method, 'Standard commercial')!==false){ // Checks that it's a commercial order
+            if(count($tyre_items)==count($items['SalesOrderLine'])){ //Checks that every item is a tyre
+                //Here if all items are tyres
+                //Need to check here if items are all in stock with Southam
+                $main_supplier_id = 88; //Micheldever??
+                $i = 0;
+                $instock_at_main_supplier = true;
+                foreach($items['SalesOrderLine'] as $tyre){
+                    $product_id = wc_get_product_id_by_sku($tyre['eCommerceCode']);
+                    $suppliers = get_post_meta($product_id, '_stockist_lead_times', true);
+                    if(isset($suppliers[$main_supplier_id])){
+                        if((int)$tyre['Quantity'] >= $suppliers[$main_supplier_id]['stock']){
+                            $instock_at_main_supplier = false;
+                        }
+                    }else{
                         $instock_at_main_supplier = false;
                     }
+                    $i++;
                 }
-                $i++;
+            }else{
+                $instock_at_main_supplier = false;
             }
-
-            if($instock_at_main_supplier){
-                //This is where we will add the XML to new_format
-            }
+        }else{
+            $instock_at_main_supplier = false;
         }
 
+        if($instock_at_main_supplier){
+            //This is where we will add the XML to new_format
+            foreach($items['SalesOrderLine'] as $k => $tyre){
+                $items['SalesOrderLine'][$k]['Direct'] = 'true';
+                $items['SalesOrderLine'][$k]['SelectedSupplier'] = 'SOUTHAMT';
+            }
+        }
 
 
         $new_format['Lines'] = $items;
