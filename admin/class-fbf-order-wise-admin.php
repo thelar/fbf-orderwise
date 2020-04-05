@@ -162,6 +162,13 @@ class Fbf_Order_Wise_Admin
         $datetime = new DateTime($order->order_date);
         $date = $datetime->format("Y-m-d\TH:i:s");
 
+        $c_price = 0;
+        foreach($order->get_coupons() as $coupon){
+            $c = $coupon;
+            $c_name = $c->get_name();
+            $c_price+=(float)$c->get_discount();
+        }
+
 
         // Tax code
         if(empty($order->get_taxes())){
@@ -411,6 +418,17 @@ class Fbf_Order_Wise_Admin
         //Add delivery cost for FedEx orders
         if(strpos($shipping_method, 'FedEx')!==false){
            $new_format['DeliveryCost'] = $shipping_gross;
+        }
+
+        if($c_price > 0){
+            $new_format['Dissurs'] = [
+                'SalesDissur' => [
+                    'Description' => $c_name,
+                    'Price' => $c_price,
+                    'TaxCode' => $tax_code,
+                    'GrossDiscount' => 'false'
+                ]
+            ];
         }
 
 
