@@ -168,8 +168,9 @@ class Fbf_Order_Wise_Admin
         // require_once(ABSPATH . '/wp-content/plugins/woocommerce-customer-order-xml-export-suite/includes/class-wc-customer-order-xml-export-suite-generator.php');
 
         // format date
-        $datetime = new DateTime($order->order_date);
-        $date = $datetime->format("Y-m-d\TH:i:s");
+        //$datetime = new DateTime($order->order_date);
+        $datetime_o = $order->get_date_created();
+        $date = $datetime_o->format("Y-m-d\TH:i:s");
 
         $c_price = 0;
         foreach($order->get_coupons() as $coupon){
