@@ -354,6 +354,11 @@ class Fbf_Order_Wise_Admin
             $taxes = $order->get_taxes();
             $price_inc_tax = $product->get_regular_price();
             $price_exc_tax = $product->get_regular_price();
+
+            //Discount meta
+            $discount_meta = $item_data->get_meta('_advanced_woo_discount_item_total_discount');
+            $the_order = wc_get_order( $order->get_ID() );
+
             if(!empty($taxes)){
                 foreach($taxes as $tax){
                     $price_inc_tax+= ($product->get_regular_price()/100) * $tax->get_rate_percent();
