@@ -188,9 +188,16 @@ class Fbf_Order_Wise_Api
 
                 // mark the received order numbers as status == processing
                 if ($order) {
-                    $order->update_status('imported');
-                    $completed[] = $order_id;
-                    $response['completed'][] = $order_id;
+                    $order_status = $order->get_status();
+                    if($order_status==='proccessing'){
+                        $order->update_status('imported');
+                        $completed[] = $order_id;
+                        $response['completed'][] = $order_id;
+                    }else if($order_status==='on-backorder'){
+                        $order->update_status('awaiting-bos');
+                        $completed[] = $order_id;
+                        $response['completed'][] = $order_id;
+                    }
                 } else {
                     $failed[] = $order_id;
                     $response['failed'][] = $order_id;
@@ -257,7 +264,7 @@ class Fbf_Order_Wise_Api
 
                 switch($order_status){
                     case 'Awaiting despatch':
-                        if($order->get_status()!=='awaiting-despatch'){
+                        if($order->get_status()!=='awaiting-despatch'&&$order-get_status()!=='awaiting-bos'){
                             if($order->update_status('awaiting-despatch')){
                                 $success[$order_num][] = 'Order status updated to ' . $order_status;
                             }else{
