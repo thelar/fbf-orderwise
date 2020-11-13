@@ -264,7 +264,7 @@ class Fbf_Order_Wise_Api
 
                 switch($order_status){
                     case 'Awaiting despatch':
-                        if($order->get_status()!=='awaiting-despatch'&&$order-get_status()!=='awaiting-bos'){
+                        if($order->get_status()!=='awaiting-despatch'&&$order->get_status()!=='awaiting-bos'){
                             if($order->update_status('awaiting-despatch')){
                                 $success[$order_num][] = 'Order status updated to ' . $order_status;
                             }else{
