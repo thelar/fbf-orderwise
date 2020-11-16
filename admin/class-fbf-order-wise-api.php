@@ -106,7 +106,7 @@ class Fbf_Order_Wise_Api
             $id = $order->getElementsByTagName('OrderNumber')->item(0)->textContent;
             $order_wc = wc_get_order($id);
             $status = $order_wc->get_status();
-            if($status!=='processing'){
+            if($status!=='processing'&&$status!=='on-backorder'){
                 $ordersToDelete[] = $order;
             }
         }
