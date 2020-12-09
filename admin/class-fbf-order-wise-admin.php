@@ -317,9 +317,6 @@ class Fbf_Order_Wise_Admin
 
 
         switch($order->get_payment_method()){
-            case 'boots_dekopay':
-                $payment_method = 'Pay4Later';
-                break;
             case 'stripe':
                 $payment_method = 'stripe';
                 break;
