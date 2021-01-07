@@ -431,6 +431,54 @@ class Fbf_Order_Wise_Admin
         }
 
         if($c_price > 0){
+            // If the coupon name is one of the
+            if(strpos($c_name, 'checkdisc_')!==false){
+                switch($c_name){
+                    case 'checkdisc_1':
+                        $c_name = 'sales_discount_kp';
+                        break;
+                    case 'checkdisc_21':
+                        $c_name = 'sales_discount_lb';
+                        break;
+                    case 'checkdisc_22':
+                        $c_name = 'sales_discount_ct';
+                        break;
+                    case 'checkdisc_4227':
+                        $c_name = 'sales_discount_dp';
+                        break;
+                    case 'checkdisc_64':
+                        $c_name = 'sales_discount_im';
+                        break;
+                    default:
+                        $c_name = 'sales_discount_unknown';
+                        break;
+                }
+            }else if(strpos($c_name, 'custdisc_')!==false){
+                // get taken by meta on original quote
+                $order_from = get_post_meta($order->get_ID(), '_order_from_quote', true);
+                $sales_id = get_post_meta($order_from, '_taken_by', true);
+                switch($sales_id){
+                    case 1:
+                        $c_name = 'sales_discount_kp';
+                        break;
+                    case 21:
+                        $c_name = 'sales_discount_lb';
+                        break;
+                    case 22:
+                        $c_name = 'sales_discount_ct';
+                        break;
+                    case 4227:
+                        $c_name = 'sales_discount_dp';
+                        break;
+                    case 64:
+                        $c_name = 'sales_discount_im';
+                        break;
+                    default:
+                        $c_name = 'sales_discount_unknown';
+                        break;
+                }
+            }
+
             $new_format['Dissurs'] = [
                 'SalesDissur' => [
                     'Description' => $c_name,
