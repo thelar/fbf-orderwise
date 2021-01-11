@@ -332,6 +332,9 @@ class Fbf_Order_Wise_Admin
             case 'klarna_payments':
                 $payment_method = 'Klarna';
                 break;
+            case 'cod':
+                $payment_method = '';
+                break;
             default:
                 $payment_method = 'unrecognised';
                 break;
