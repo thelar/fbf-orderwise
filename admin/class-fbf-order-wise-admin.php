@@ -240,6 +240,23 @@ class Fbf_Order_Wise_Admin
                 break;
         }
 
+        if(strpos($order->get_shipping_method(), 'Retail')!==false){
+            //It's retail fitting
+            $is_retail_fitting = true;
+            $delivery_gross = 0;
+            $delivery_net = 0;
+            $delivery_tax = 0;
+            $shipping_line_gross = $order->get_shipping_total() + $order->get_shipping_tax();
+            $shipping_line_net = $order->get_shipping_total();
+            $shipping_line_tax = $order->get_shipping_tax();
+        }else{
+            $is_retail_fitting = false;
+            $delivery_gross = $order->get_shipping_total() + $order->get_shipping_tax();
+            $delivery_net = $order->get_shipping_total();
+            $delivery_tax = $order->get_shipping_tax();
+        }
+
+
         // create XML feed
         $new_format = [
             // 'OrderNumber' => get_post_meta($order->id, '_order_number', true),
@@ -250,9 +267,9 @@ class Fbf_Order_Wise_Admin
             'SpecialInstructions' => $msg,
             'CustomerOrderRef' => $order->get_id(),
             'DeliveryMethod' => $shipping_method,
-            'DeliveryGross' => $order->get_shipping_total() + $order->get_shipping_tax(),
-            'DeliveryNet' => $order->get_shipping_total(),
-            'DeliveryTax' => $order->get_shipping_tax(),
+            'DeliveryGross' => $delivery_gross,
+            'DeliveryNet' => $delivery_net,
+            'DeliveryTax' => $delivery_tax,
             'DeliveryTaxCode' => $tax_code,
             'OrderGross' => $order->get_total(),
             'OrderNet' => $order->get_total() - $order->get_total_tax(),
@@ -389,6 +406,18 @@ class Fbf_Order_Wise_Admin
                     }
                 }
             }
+        }
+
+        if($is_retail_fitting){
+            $items['SalesOrderLine'][] = [
+                'eCommerceCode' => 'FITTING',
+                'Code' => 'FITTING',
+                'Quantity' => 1,
+                'eCommerceItemID' => 'RETAIL_FITTING',
+                'ItemGross' => $shipping_line_gross,
+                'ItemNet' => $shipping_line_net,
+                'TaxCode' => $shipping_line_tax
+            ];
         }
 
         if(strpos($shipping_method, 'Standard commercial')!==false){ // Checks that it's a commercial order
