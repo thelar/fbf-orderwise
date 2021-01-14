@@ -246,9 +246,11 @@ class Fbf_Order_Wise_Admin
             $delivery_gross = 0;
             $delivery_net = 0;
             $delivery_tax = 0;
+            $unit_cost = 12.5;
             $shipping_line_gross = $order->get_shipping_total() + $order->get_shipping_tax();
             $shipping_line_net = $order->get_shipping_total();
             $shipping_line_tax = $order->get_shipping_tax();
+            $shipping_line_qty = $shipping_line_net/$unit_cost;
         }else{
             $is_retail_fitting = false;
             $delivery_gross = $order->get_shipping_total() + $order->get_shipping_tax();
@@ -409,7 +411,7 @@ class Fbf_Order_Wise_Admin
             $items['SalesOrderLine'][] = [
                 'eCommerceCode' => 'FITTING',
                 'Code' => 'FITTING',
-                'Quantity' => 1,
+                'Quantity' => $shipping_line_qty,
                 'eCommerceItemID' => 'RETAIL_FITTING',
                 'ItemGross' => $shipping_line_gross,
                 'ItemNet' => $shipping_line_net,
