@@ -413,8 +413,8 @@ class Fbf_Order_Wise_Admin
                 'Code' => 'FITTING',
                 'Quantity' => $shipping_line_qty,
                 'eCommerceItemID' => 'RETAIL_FITTING',
-                'ItemGross' => $shipping_line_gross,
-                'ItemNet' => $shipping_line_net,
+                'ItemGross' => 15,
+                'ItemNet' => 12.50,
                 'TaxCode' => $tax_code
             ];
         }
