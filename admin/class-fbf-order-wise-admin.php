@@ -235,6 +235,14 @@ class Fbf_Order_Wise_Admin
             case 'International economy freight':
                 $shipping_method = 'FedEx International economy freight';
                 break;
+            case 'Click and collect':
+            case 'Click and collect (1)':
+            case 'Click and collect (2)':
+            case 'Click and collect (3)':
+            case 'Click and collect (4)':
+            case 'Click and collect (5)':
+                $shipping_method = 'Being Collected';
+                break;
             default:
                 $shipping_method = $order->get_shipping_method();
                 break;
