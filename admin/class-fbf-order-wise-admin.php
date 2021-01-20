@@ -359,6 +359,9 @@ class Fbf_Order_Wise_Admin
             case 'cod':
                 $payment_method = '';
                 break;
+            case 'boots_dekopay':
+                $payment_method = 'Pay4Later';
+                break;
             default:
                 $payment_method = 'unrecognised';
                 break;
