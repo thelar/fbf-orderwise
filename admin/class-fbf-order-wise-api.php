@@ -298,7 +298,6 @@ class Fbf_Order_Wise_Api
 
                                 // Sending the new Order email notification for an $order_id (order ID)
                                 $email_new_order->trigger( $order->get_order_number() );
-
                                 $order->add_order_note($this->get_delivery_note($orderxml->deliveries), false);
                             }
 
