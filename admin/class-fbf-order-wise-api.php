@@ -298,7 +298,7 @@ class Fbf_Order_Wise_Api
 
                                 // Sending the new Order email notification for an $order_id (order ID)
                                 $email_new_order->trigger( $order->get_order_number() );
-                                $order->add_order_note($this->get_delivery_note($orderxml->deliveries), false);
+                                $order->add_order_note($this->get_delivery_note($orderxml->deliveries, true), false);
                             }
 
                             /*if(!empty($this->get_delivery_note($orderxml->deliveries))){
@@ -346,18 +346,23 @@ class Fbf_Order_Wise_Api
         }
     }
 
-    private function get_delivery_note($deliveries)
+    private function get_delivery_note($deliveries, $is_html=false)
     {
         //Handle note to customer
+        if($is_html){
+            $eol = PHP_EOL;
+        }else{
+            $eol = '<br/>';
+        }
         $delivery_note = '';
         foreach($deliveries as $delivery){
             $del_num = (string)$delivery->deliveryNumber;
             $del_date = (string)$delivery->deliveryDate;
             $del_courier_name = (string)$delivery->courierName;
 
-            $delivery_note.= sprintf('Delivery number: %s' . PHP_EOL, $del_num);
-            $delivery_note.= sprintf('Dispatch date: %s' . PHP_EOL, $del_date);
-            $delivery_note.= sprintf('Courier: %s' . PHP_EOL, $del_courier_name);
+            $delivery_note.= sprintf('Delivery number: %s' . $eol, $del_num);
+            $delivery_note.= sprintf('Dispatch date: %s' . $eol, $del_date);
+            $delivery_note.= sprintf('Courier: %s' . $eol, $del_courier_name);
 
             foreach($delivery->consignmentNumbers as $consignmentNumber){
                 $del_consignment_num = (string)$consignmentNumber->consignmentNumber;
