@@ -292,7 +292,14 @@ class Fbf_Order_Wise_Api
                             }
 
                             if(!empty($this->has_delivery($orderxml->deliveries))){
-                                $order->add_order_note($this->get_delivery_note($orderxml->deliveries), true);
+                                // Send out the delivery email here
+                                $email_new_order = WC()->mailer()->get_emails()['WC_Order_Delivery'];
+                                $email_new_order->set_tracking($this->get_delivery_note($orderxml->deliveries));
+
+                                // Sending the new Order email notification for an $order_id (order ID)
+                                $email_new_order->trigger( $order->get_order_number() );
+
+                                $order->add_order_note($this->get_delivery_note($orderxml->deliveries), false);
                             }
 
                             /*if(!empty($this->get_delivery_note($orderxml->deliveries))){
