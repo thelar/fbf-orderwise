@@ -367,7 +367,7 @@ class Fbf_Order_Wise_Api
             foreach($delivery->consignmentNumbers as $consignmentNumber){
                 $del_consignment_num = (string)$consignmentNumber->consignmentNumber;
 
-                $delivery_note.= sprintf('Consignment: %s' . PHP_EOL, $del_consignment_num);
+                $delivery_note.= sprintf('Consignment: %s' . $eol, $del_consignment_num);
             }
         }
         return $delivery_note;
