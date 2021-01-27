@@ -284,7 +284,6 @@ class Fbf_Order_Wise_Admin
             'OrderGross' => $order->get_total(),
             'OrderNet' => $order->get_total() - $order->get_total_tax(),
             'OrderTax' => $order->get_total_tax(),
-            'AmountPaid' => $order->get_total(),
             'TakenBy' => $taken_by,
             'Customer' => [
                 'eCommerceAccountNumber' => '',
@@ -367,12 +366,16 @@ class Fbf_Order_Wise_Admin
                 break;
         }
 
-        $new_format['Payments'] = [
-            'SalesPayment' => [
-                'Description' => $payment_method,
-                'Amount' => $order->get_total()
-            ]
-        ];
+        if($payment_method!==''){
+            $new_format['AmountPaid'] = $order->get_total();
+            $new_format['Payments'] = [
+                'SalesPayment' => [
+                    'Description' => $payment_method,
+                    'Amount' => $order->get_total()
+                ]
+            ];
+        }
+
 
 
 
