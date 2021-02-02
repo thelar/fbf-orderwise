@@ -381,6 +381,7 @@ class Fbf_Order_Wise_Admin
 
         // Line Items
         $tyre_items = [];
+        $shipping_classes = [];
         foreach ($order->get_items() as $item_id => $item_data) {
             $product = $order->get_product_from_item($item_data);
             $product_id = $product->get_parent_id()?:$product->get_id();
@@ -419,9 +420,42 @@ class Fbf_Order_Wise_Admin
                     }
                 }
             }
+
+            // Sort into shipping classes
+            if($is_retail_fitting){
+                $shipping_class = $product->get_shipping_class();
+                $shipping_classes[$shipping_class]+=$item_data->get_quantity(); // Counts how many of each shipping class
+            }
         }
 
-        if($is_retail_fitting){
+
+        if($is_retail_fitting && !empty($shipping_classes)){
+            foreach($shipping_classes as $ck => $cv){
+                if($ck==='tyre'){
+                    $net = 12.50;
+                    $gross = 15.00;
+                }else if($ck==='spacer'){
+                    $net = 40.00;
+                    $gross = 48.00;
+                }
+                $items['SalesOrderLine'][] = [
+                    'eCommerceCode' => 'FITTING',
+                    'Code' => 'FITTING',
+                    'Quantity' => $cv,
+                    'eCommerceItemID' => 'RETAIL_FITTING',
+                    'ItemGross' => $gross,
+                    'ItemNet' => $net,
+                    'TaxCode' => $tax_code
+                ];
+            }
+        }
+
+
+
+
+
+
+        /*if($is_retail_fitting){
             $items['SalesOrderLine'][] = [
                 'eCommerceCode' => 'FITTING',
                 'Code' => 'FITTING',
@@ -431,7 +465,7 @@ class Fbf_Order_Wise_Admin
                 'ItemNet' => 12.50,
                 'TaxCode' => $tax_code
             ];
-        }
+        }*/
 
         if(strpos($shipping_method, 'Standard commercial')!==false){ // Checks that it's a commercial order
             if(count($tyre_items)==count($items['SalesOrderLine'])){ //Checks that every item is a tyre
