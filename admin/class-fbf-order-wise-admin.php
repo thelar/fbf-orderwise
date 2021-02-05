@@ -499,6 +499,7 @@ class Fbf_Order_Wise_Admin
                 $items['SalesOrderLine'][$k]['Direct'] = 'true';
                 $items['SalesOrderLine'][$k]['SelectedSupplier'] = 'SOUTHAMT';
             }
+            $new_format['DeliveryMethod'] = 'Direct Delivery';
         }
 
 
