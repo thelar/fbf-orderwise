@@ -438,15 +438,17 @@ class Fbf_Order_Wise_Admin
                     $net = 40.00;
                     $gross = 48.00;
                 }
-                $items['SalesOrderLine'][] = [
-                    'eCommerceCode' => 'FITTING',
-                    'Code' => 'FITTING',
-                    'Quantity' => $cv,
-                    'eCommerceItemID' => 'RETAIL_FITTING',
-                    'ItemGross' => $gross,
-                    'ItemNet' => $net,
-                    'TaxCode' => $tax_code
-                ];
+                if($ck==='tyre'||$ck==='spacker'){
+                    $items['SalesOrderLine'][] = [
+                        'eCommerceCode' => 'FITTING',
+                        'Code' => 'FITTING',
+                        'Quantity' => $cv,
+                        'eCommerceItemID' => 'RETAIL_FITTING',
+                        'ItemGross' => $gross,
+                        'ItemNet' => $net,
+                        'TaxCode' => $tax_code
+                    ];
+                }
             }
         }
 
