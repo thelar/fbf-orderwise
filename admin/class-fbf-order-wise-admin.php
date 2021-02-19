@@ -438,7 +438,7 @@ class Fbf_Order_Wise_Admin
                     $net = 40.00;
                     $gross = 48.00;
                 }
-                if($ck==='tyre'||$ck==='spacker'){
+                if($ck==='tyre'||$ck==='spacer'){
                     $items['SalesOrderLine'][] = [
                         'eCommerceCode' => 'FITTING',
                         'Code' => 'FITTING',
