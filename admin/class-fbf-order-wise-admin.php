@@ -184,8 +184,6 @@ class Fbf_Order_Wise_Admin
             $f_price+= abs($fee->get_amount());
         }
 
-
-
         // Tax code
         if(empty($order->get_taxes())){
             $tax_code = 'T0';
