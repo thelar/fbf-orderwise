@@ -179,6 +179,12 @@ class Fbf_Order_Wise_Admin
             $c_price+=(float)$c->get_discount();
         }
 
+        $f_price = 0;
+        foreach($order->get_fees() as $fee){
+            $f_price+= abs($fee->get_amount());
+        }
+
+
 
         // Tax code
         if(empty($order->get_taxes())){
@@ -190,6 +196,9 @@ class Fbf_Order_Wise_Admin
         }else {
             // Has VAT - if it's GB need to recalculate the tax
             $tax_code = 'T1';
+
+            // Fix the $f_price (remove the VAT)
+            $f_price = $f_price/1.2;
 
             $country_code = $order->get_shipping_country();
             if ($country_code === 'GB' || $country_code === 'IM' || $country_code === 'JE' || $country_code == 'GG') {
@@ -512,7 +521,7 @@ class Fbf_Order_Wise_Admin
            $new_format['DeliveryCost'] = $shipping_gross;
         }
 
-        if($c_price > 0){
+        /*if($c_price > 0){
             // If the coupon name is one of the
             if(strpos($c_name, 'checkdisc_')!==false){
                 switch($c_name){
@@ -569,7 +578,79 @@ class Fbf_Order_Wise_Admin
                     'GrossDiscount' => 'false'
                 ]
             ];
+        }*/
+
+
+
+        if($f_price > 0){
+            $order_from = get_post_meta($order->get_ID(), '_order_from_quote', true);
+            $sales_id = get_post_meta($order_from, '_taken_by', true);
+            switch($sales_id){
+                case 1:
+                    $f_name = 'sales_discount_kp';
+                    break;
+                case 21:
+                    $f_name = 'sales_discount_lb';
+                    break;
+                case 22:
+                    $f_name = 'sales_discount_ct';
+                    break;
+                case 4227:
+                    $f_name = 'sales_discount_dp';
+                    break;
+                case 64:
+                    $f_name = 'sales_discount_im';
+                    break;
+                default:
+                    $f_name = 'sales_discount_unknown';
+                    break;
+            }
+
+            /*$new_format['Dissurs'] = [
+                'SalesDissur' => [
+                    'Description' => $f_name,
+                    'Price' => $f_price,
+                    'TaxCode' => $tax_code,
+                    'GrossDiscount' => 'true'
+                ]
+            ];*/
         }
+
+        if($c_price > 0 && $f_price > 0){
+            $new_format['Dissurs']['SalesDissur'] = [
+                [
+                    'Description' => $c_name,
+                    'Price' => $c_price,
+                    'TaxCode' => $tax_code,
+                    'GrossDiscount' => 'false'
+                ],
+                [
+                    'Description' => $f_name,
+                    'Price' => $f_price,
+                    'TaxCode' => $tax_code,
+                    'GrossDiscount' => 'false'
+                ]
+            ];
+        }else if($f_price > 0){
+            $new_format['Dissurs'] = [
+                'SalesDissur' => [
+                    'Description' => $f_name,
+                    'Price' => $f_price,
+                    'TaxCode' => $tax_code,
+                    'GrossDiscount' => 'false'
+                ]
+            ];
+        }else if($c_price > 0){
+            $new_format['Dissurs'] = [
+                'SalesDissur' => [
+                    'Description' => $c_name,
+                    'Price' => $c_price,
+                    'TaxCode' => $tax_code,
+                    'GrossDiscount' => 'false'
+                ]
+            ];
+        }
+
 
 
         return $new_format;
