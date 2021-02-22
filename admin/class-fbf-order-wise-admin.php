@@ -189,7 +189,6 @@ class Fbf_Order_Wise_Admin
         // Tax code
         if(empty($order->get_taxes())){
             $tax_code = 'T0';
-
             $shipping_gross = $order->get_total_shipping();
             $shipping_tax = $order->get_shipping_tax();
             $shipping_net = $shipping_gross - $shipping_tax;
