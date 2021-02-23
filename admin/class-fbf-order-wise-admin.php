@@ -613,6 +613,32 @@ class Fbf_Order_Wise_Admin
             ];*/
         }
 
+        if($c_price > 0) {
+            // If the coupon name is one of the
+            if (strpos($c_name, 'checkdisc_') !== false) {
+                switch ($c_name) {
+                    case 'checkdisc_1':
+                        $c_name = 'sales_discount_kp';
+                        break;
+                    case 'checkdisc_21':
+                        $c_name = 'sales_discount_lb';
+                        break;
+                    case 'checkdisc_22':
+                        $c_name = 'sales_discount_ct';
+                        break;
+                    case 'checkdisc_4227':
+                        $c_name = 'sales_discount_dp';
+                        break;
+                    case 'checkdisc_64':
+                        $c_name = 'sales_discount_im';
+                        break;
+                    default:
+                        $c_name = 'sales_discount_unknown';
+                        break;
+                }
+            }
+        }
+
         if($c_price > 0 && $f_price > 0){
             $new_format['Dissurs']['SalesDissur'] = [
                 [
@@ -647,8 +673,6 @@ class Fbf_Order_Wise_Admin
                 ]
             ];
         }
-
-
 
         return $new_format;
     }
