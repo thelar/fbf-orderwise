@@ -356,8 +356,8 @@ class Fbf_Order_Wise_Admin
                 $payment_method = 'Paypal';
                 break;
             case 'sagepaydirect':
-                $sageresult = get_post_meta($order->get_id(),'_sageresult', true);
-                if(strtolower($sageresult['CardType'])=='amex'||strtolower($sageresult['CardType'])=='american express'){
+                $card_type = $order->get_meta('_sage_card_type');
+                if($card_type=='American Express'){
                     $payment_method = 'American Express';
                 }else{
                     $payment_method = 'Sage Pay Credit Card';
