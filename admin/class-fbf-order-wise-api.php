@@ -83,10 +83,8 @@ class Fbf_Order_Wise_Api
         }
 
         // auth checks
-
         // get the latest export id
         $export_id = $this->getLatestExportId();
-
 
         if(!$export_id) {
             echo 'No Exports Found';
@@ -96,6 +94,11 @@ class Fbf_Order_Wise_Api
 
         // get export
         $export = wc_customer_order_csv_export_get_export(wc_clean($export_id));
+        // check export
+        if (!$export) {
+            echo 'Error: Export not found';
+            exit;
+        }
 
         $dom = new DOMDocument();
         $dom->loadXML($export->get_output());
@@ -114,16 +117,11 @@ class Fbf_Order_Wise_Api
             $node->parentNode->removeChild($node);
         }
         $xml = $dom->saveXML();
+
         /*echo '<pre>';
         var_dump($xml);
         echo '</pre>';
         die();*/
-
-
-        // check export
-        if (!$export) {
-            echo 'Error: Export not found';
-        }
 
         $output_type = $export->get_output_type();
 
