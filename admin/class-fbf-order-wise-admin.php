@@ -641,7 +641,7 @@ class Fbf_Order_Wise_Admin
                         $c_name = 'sales_discount_im';
                         break;
                     case 'checkdisc_8248':
-                        $f_name = 'sales_discount_kf';
+                        $c_name = 'sales_discount_kf';
                         break;
                     default:
                         $c_name = 'sales_discount_unknown';
