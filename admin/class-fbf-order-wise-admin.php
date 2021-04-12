@@ -603,6 +603,9 @@ class Fbf_Order_Wise_Admin
                 case 64:
                     $f_name = 'sales_discount_im';
                     break;
+                case 8248:
+                    $f_name = 'sales_discount_kf';
+                    break;
                 default:
                     $f_name = 'sales_discount_unknown';
                     break;
