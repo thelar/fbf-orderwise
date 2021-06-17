@@ -387,12 +387,11 @@ class Fbf_Order_Wise_Admin
             ];
         }
 
-
-
-
         // Line Items
         $tyre_items = [];
         $shipping_classes = [];
+        $promise_date = new DateTime();
+        $promise_date->modify('+3 day');
         foreach ($order->get_items() as $item_id => $item_data) {
             $product = $order->get_product_from_item($item_data);
             $product_id = $product->get_parent_id()?:$product->get_id();
@@ -437,7 +436,19 @@ class Fbf_Order_Wise_Admin
                 $shipping_class = $product->get_shipping_class();
                 $shipping_classes[$shipping_class]+=$item_data->get_quantity(); // Counts how many of each shipping class
             }
+
+            // Get promised date
+            if(!empty($product->get_meta('_expected_back_in_stock_date')) && $product->get_stock_quantity() < 0){ // If it's less than 0 - we can assume that customer has ordered more than were in stock
+                $product_promise_date = new DateTime($product->get_meta('_expected_back_in_stock_date'));
+                $product_promise_date->modify('+7 day');
+                if($product_promise_date > $promise_date){
+                    $promise_date = $product_promise_date;
+                    $new_format['PromisedDate'] = $promise_date->format('d/m/Y');
+                }
+            }
         }
+
+
 
 
         if($is_retail_fitting && !empty($shipping_classes)){
