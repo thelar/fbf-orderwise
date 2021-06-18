@@ -456,7 +456,7 @@ class Fbf_Order_Wise_Admin
             }
             if($product_promise_date >= $promise_date){
                 $promise_date = $product_promise_date;
-                $new_format['PromisedDate'] = $promise_date->format('d/m/Y');
+                //$new_format['PromisedDate'] = $promise_date->format('d/m/Y');
             }
         }
 
