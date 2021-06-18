@@ -441,10 +441,22 @@ class Fbf_Order_Wise_Admin
             if(!empty($product->get_meta('_expected_back_in_stock_date')) && $product->get_stock_quantity() < 0){ // If it's less than 0 - we can assume that customer has ordered more than were in stock
                 $product_promise_date = new DateTime($product->get_meta('_expected_back_in_stock_date'));
                 $product_promise_date->modify('+7 day');
-                if($product_promise_date > $promise_date){
-                    $promise_date = $product_promise_date;
-                    $new_format['PromisedDate'] = $promise_date->format('d/m/Y');
+
+                // if meta date is earlier than current day, treat it as empty
+                $today = new DateTime();
+                if($product_promise_date < $today){
+                    $product_promise_date = $today->modify('+60 day');
                 }
+            }else if(empty($product->get_meta('_expected_back_in_stock_date')) && $product->get_stock_quantity() < 0){
+                $product_promise_date = new DateTime();
+                $product_promise_date->modify('+60 day');
+            }else{
+                $product_promise_date = new DateTime();
+                $product_promise_date->modify('+3 day');
+            }
+            if($product_promise_date >= $promise_date){
+                $promise_date = $product_promise_date;
+                $new_format['PromisedDate'] = $promise_date->format('d/m/Y');
             }
         }
 
