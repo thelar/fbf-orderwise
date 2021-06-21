@@ -461,8 +461,6 @@ class Fbf_Order_Wise_Admin
         }
 
 
-
-
         if($is_retail_fitting && !empty($shipping_classes)){
             foreach($shipping_classes as $ck => $cv){
                 if($ck==='tyre'){
