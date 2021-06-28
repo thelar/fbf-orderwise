@@ -335,7 +335,8 @@ class Fbf_Order_Wise_Admin
                     'Postcode' => $order->get_shipping_postcode(),
                     'Email' => $order->get_billing_email(),
                     'Telephone' => $order->get_billing_phone(),
-                    'SpecialInstructions' => $msg
+                    'SpecialInstructions' => $msg,
+                    'DeliveryMethod' => $shipping_method
                 ]
             ],
             'PricesAsNet' => 'true',
