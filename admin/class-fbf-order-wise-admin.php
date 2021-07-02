@@ -227,6 +227,12 @@ class Fbf_Order_Wise_Admin
                 $msg.= $item_data->get_name() . '\r\n';
             }
         }
+        if(!empty($order->get_meta('_fbf_order_data_manufacturers'))){
+            $msg.='Manufacturer(s): ' . $order->get_meta('_fbf_order_data_manufacturers') . '\r\n';
+        }
+        if(!empty($order->get_meta('_fbf_order_data_vehicles'))){
+            $msg.='Vehicle(s): ' . $order->get_meta('_fbf_order_data_vehicles') . '\r\n';
+        }
         $msg.= $order->get_customer_note();
 
         //Name is either the company name or if not set the persons name
