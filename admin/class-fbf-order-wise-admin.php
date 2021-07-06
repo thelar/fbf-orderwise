@@ -285,7 +285,6 @@ class Fbf_Order_Wise_Admin
             'OrderNumber' => $order->get_id(),
             'OrderDate' => $date,
             'OrderAnalysis' => get_post_meta($order->get_id(), '_order_analysis', true),
-            'SpecialDeliveryInstructions' => $msg,
             'SpecialInstructions' => $msg,
             'CustomerOrderRef' => $order->get_id(),
             'DeliveryMethod' => $shipping_method,
@@ -341,7 +340,6 @@ class Fbf_Order_Wise_Admin
                     'Postcode' => $order->get_shipping_postcode(),
                     'Email' => $order->get_billing_email(),
                     'Telephone' => $order->get_billing_phone(),
-                    'SpecialInstructions' => $msg,
                     'DeliveryMethod' => $shipping_method
                 ]
             ],
