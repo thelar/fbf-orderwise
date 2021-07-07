@@ -255,6 +255,18 @@ class Fbf_Order_Wise_Admin
             case 'Click and collect (5)':
                 $shipping_method = 'Being Collected';
                 break;
+            case 'Standard':
+            case 'Standard (1)':
+            case 'Standard (2)':
+            case 'Standard (3)':
+            case 'Standard (4)':
+            case 'Standard (5)':
+                if($order->get_meta('_fbf_shipping_address_type') && $order->get_meta('_fbf_shipping_address_type')==='Commercial'){
+                    $shipping_method = substr_replace($order->get_shipping_method(), ' commercial', 8, 0);
+                }else{
+                    $shipping_method = substr_replace($order->get_shipping_method(), ' residential', 8, 0);
+                }
+                break;
             default:
                 $shipping_method = $order->get_shipping_method();
                 break;
