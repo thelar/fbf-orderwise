@@ -369,7 +369,7 @@ class Fbf_Order_Wise_Admin
             case 'stripe':
                 $payment_method = 'stripe';
                 break;
-            case 'ppec_paypal':
+            case 'ppcp-gateway':
                 $payment_method = 'Paypal';
                 break;
             case 'sagepaydirect':
