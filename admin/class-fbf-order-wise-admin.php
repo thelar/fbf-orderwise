@@ -272,9 +272,9 @@ class Fbf_Order_Wise_Admin
             case 'Free shipping on orders over £250 (4)':
             case 'Free shipping on orders over £250 (5)':
                 if($order->get_meta('_fbf_shipping_address_type') && $order->get_meta('_fbf_shipping_address_type')==='Commercial'){
-                    $shipping_method = substr_replace($order->get_shipping_method(), ' commercial', 33, 0);
+                    $shipping_method = substr_replace($order->get_shipping_method(), ' commercial', 34, 0);
                 }else{
-                    $shipping_method = substr_replace($order->get_shipping_method(), ' residential', 33, 0);
+                    $shipping_method = substr_replace($order->get_shipping_method(), ' residential', 34, 0);
                 }
             break;
             default:
