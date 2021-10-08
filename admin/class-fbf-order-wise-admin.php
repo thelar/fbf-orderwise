@@ -422,7 +422,9 @@ class Fbf_Order_Wise_Admin
         foreach ($order->get_items() as $item_id => $item_data) {
             $product = $order->get_product_from_item($item_data);
             $product_id = $product->get_parent_id()?:$product->get_id();
-            $taxes = $order->get_taxes();
+
+
+            /*$taxes = $order->get_taxes();
             $price_inc_tax = $product->get_regular_price();
             $price_exc_tax = $product->get_regular_price();
 
@@ -430,7 +432,11 @@ class Fbf_Order_Wise_Admin
                 foreach($taxes as $tax){
                     $price_inc_tax+= ($product->get_regular_price()/100) * $tax->get_rate_percent();
                 }
-            }
+            }*/
+
+            $item_net = round($item_data->get_total()/$item_data->get_quantity(), 2);
+            $item_tax = round($item_data->get_total_tax()/$item_data->get_quantity(), 2);
+            $item_gross = $item_net + $item_tax;
 
             // skip loop if not product found
             if (!$product) {
@@ -441,10 +447,10 @@ class Fbf_Order_Wise_Admin
             $items['SalesOrderLine'][] = [
                 'eCommerceCode' => $product->get_sku(),
                 'Code' => $product->get_sku(),
-                'Quantity' => $item_data['qty'],
+                'Quantity' => $item_data->get_quantity(),
                 'eCommerceItemID' => $product->get_id(),
-                'ItemGross' => round($price_inc_tax, 2),
-                'ItemNet' => round($price_exc_tax, 2),
+                'ItemGross' => $item_gross,
+                'ItemNet' => $item_net,
                 'TaxCode' => $tax_code
             ];
 
