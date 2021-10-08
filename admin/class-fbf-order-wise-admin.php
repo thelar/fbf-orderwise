@@ -642,6 +642,9 @@ class Fbf_Order_Wise_Admin
         if($f_price > 0){
             $order_from = get_post_meta($order->get_ID(), '_order_from_quote', true);
             $sales_id = get_post_meta($order_from, '_taken_by', true);
+            if(empty($sales_id)){
+                $sales_id =  get_post_meta($order->get_ID(), '_taken_by', true);
+            }
             switch($sales_id){
                 case 1:
                     $f_name = 'sales_discount_kp';
