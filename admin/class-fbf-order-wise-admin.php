@@ -425,6 +425,7 @@ class Fbf_Order_Wise_Admin
             $taxes = $order->get_taxes();
             $price_inc_tax = $product->get_regular_price();
             $price_exc_tax = $product->get_regular_price();
+
             if(!empty($taxes)){
                 foreach($taxes as $tax){
                     $price_inc_tax+= ($product->get_regular_price()/100) * $tax->get_rate_percent();
