@@ -434,8 +434,8 @@ class Fbf_Order_Wise_Admin
                 }
             }*/
 
-            $item_net = round($item_data->get_total()/$item_data->get_quantity(), 2);
-            $item_tax = round($item_data->get_total_tax()/$item_data->get_quantity(), 2);
+            $item_net = round($item_data->get_subtotal()/$item_data->get_quantity(), 2);
+            $item_tax = round($item_data->get_subtotal_tax()/$item_data->get_quantity(), 2);
             $item_gross = $item_net + $item_tax;
 
             // skip loop if not product found
