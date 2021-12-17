@@ -223,7 +223,7 @@ class Fbf_Order_Wise_Admin
         foreach ($order->get_items() as $item_id => $item_data) {
             //$product = $order->get_product_from_item($item_data);
 
-            if(strpos($item_data->get_name(), 'White Lettering')){
+            if(strpos($item_data->get_name(), 'White Letter')){
                 $msg.= $item_data->get_name() . '\r\n';
             }
         }
@@ -443,10 +443,16 @@ class Fbf_Order_Wise_Admin
                 continue;
             }
 
+            if(str_ends_with($product->get_sku(), '_white')){
+                $sku = str_replace('_white', '', $product->get_sku());
+            }else{
+                $sku = $product->get_sku();
+            }
+
             // create array
             $items['SalesOrderLine'][] = [
-                'eCommerceCode' => $product->get_sku(),
-                'Code' => $product->get_sku(),
+                'eCommerceCode' => $sku,
+                'Code' => $sku,
                 'Quantity' => $item_data->get_quantity(),
                 'eCommerceItemID' => $product->get_id(),
                 'ItemGross' => $item_gross,
