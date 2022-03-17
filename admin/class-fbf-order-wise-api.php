@@ -293,6 +293,7 @@ class Fbf_Order_Wise_Api
                                 // Send out the delivery email here
                                 $email_new_order = WC()->mailer()->get_emails()['WC_Order_Delivery'];
                                 $email_new_order->set_tracking($this->get_delivery_note($orderxml->deliveries));
+                                $email_new_order->set_tracking_link($this->get_tracking_links($orderxml->deliveries, $order));
 
                                 // Sending the new Order email notification for an $order_id (order ID)
                                 $email_new_order->trigger( $order->get_order_number() );
@@ -429,6 +430,14 @@ class Fbf_Order_Wise_Api
             }
         }
         return $delivery_note;
+    }
+
+    private function get_tracking_links($deliveries, \WC_Order $order)
+    {
+        $link_html = '<a href="%s">this link</a>';
+        $consignment_number = (string)$deliveries->consignmentNumbers->consignmentNumber[0];
+        $delivery_postcode = preg_replace('/\s+/', '', $order->get_shipping_postcode());
+        return sprintf($link_html, 'https://dx-track.com/track/4X4.aspx?consno='.$consignment_number.'&postcode='.$delivery_postcode);
     }
 
     private function has_delivery($deliveriesXML)
