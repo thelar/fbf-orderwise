@@ -10,6 +10,8 @@
  * @subpackage Fbf_Order_Wise/admin
  */
 
+use PhpOffice\PhpSpreadsheet\Reader\Xlsx;
+
 /**
  * The admin-specific functionality of the plugin.
  *
@@ -42,6 +44,16 @@ class Fbf_Order_Wise_Admin
     private $version;
 
     /**
+     *
+     * The garages from the garages.xlsx for National fitting
+     *
+     * @since   1.0.0
+     * @access  private
+     * @var     array   $garages    Array of garages
+     */
+    private $garages;
+
+    /**
      * Initialize the class and set its properties.
      *
      * @since    1.0.0
@@ -72,6 +84,21 @@ class Fbf_Order_Wise_Admin
         // add_filter('wc_customer_order_xml_export_suite_orders_xml', array($this, 'sv_wc_xml_export_output'), 10, 3);
         //add_filter('wc_customer_order_xml_export_suite_order_export_format', array($this, 'sv_wc_xml_export_order_format'), 10, 3);
         //add_filter('wc_customer_order_xml_export_suite_order_line_item', array($this, 'sv_wc_xml_export_line_item_addons'), 10, 3);
+
+        // Process the garages
+        $filename = 'garages.xlsx';
+        if(function_exists('get_home_path')){
+            $filepath = get_home_path() . '../supplier/azure/garages/' . $filename;
+        }else{
+            $filepath = ABSPATH . '../../supplier/azure/garages/' . $filename;
+        }
+        if(file_exists($filepath)) {
+            $reader = new Xlsx();
+            $reader->setReadDataOnly(true);
+            $spreadsheet = $reader->load($filepath);
+            $worksheet = $spreadsheet->getActiveSheet();
+            $this->garages = $worksheet->toArray();
+        }
     }
 
     /**
@@ -574,6 +601,113 @@ class Fbf_Order_Wise_Admin
                 $items['SalesOrderLine'][$k]['SelectedSupplier'] = 'SOUTHAMT';
             }
             $new_format['DeliveryMethod'] = 'Direct Delivery';
+        }
+
+
+        // Handle national fitting here
+        if(get_post_meta($order->get_ID(), '_is_national_fitting', true)){
+            // Part 1
+            if(get_post_meta($order->get_ID(), '_national_fitting_type', true)==='fit_on_drive'){
+                $fitting_method = 'Nationl Fitting (On the drive)';
+            }else if(get_post_meta($order->get_ID(), '_national_fitting_type', true)==='garage'){
+                $fitting_method = 'Nationl Fitting (Garage)';
+            }
+
+            // Set the delivery method
+            $new_format['DeliveryMethod'] = $fitting_method;
+            $new_format['Customer']['DeliveryAddress']['DeliveryMethod'] = $fitting_method;
+
+            // Adds message to comments
+            $msg = sprintf('Please mark the goods for the attention of 4x4tyres.co.uk to be fitted to vehicle reg %s\r\n', get_post_meta($order->get_ID(), '_national_fitting_reg_no', true));
+            if(!$new_format['SpecialInstructions']){
+                $new_format['SpecialInstructions'] = $msg;
+            }else{
+                $new_format['SpecialInstructions'].=$msg;
+            }
+
+            if(count($tyre_items)){
+                // Here if there are tyres in order
+                // Look for Micheldever or Stapletons
+                $micheldever = 88;
+                $stapletons = 89;
+                foreach($items['SalesOrderLine'] as $k => $tyre){
+                    $product_id = wc_get_product_id_by_sku($tyre['eCommerceCode']);
+                    $suppliers = get_post_meta($product_id, '_stockist_lead_times', true);
+                    if(isset($suppliers[$stapletons])||isset($suppliers[$micheldever])){
+                        if(isset($suppliers[$micheldever])&&(int)$tyre['Quantity']<=$suppliers[$micheldever]['stock']){
+                            $items['SalesOrderLine'][$k]['Direct'] = 'true';
+                            $items['SalesOrderLine'][$k]['SelectedSupplier'] = 'SOUTHAMT';
+                        }else if(isset($suppliers[$stapletons])&&(int)$tyre['Quantity']<=$suppliers[$stapletons]['stock']){
+                            $items['SalesOrderLine'][$k]['Direct'] = 'true';
+                            $items['SalesOrderLine'][$k]['SelectedSupplier'] = 'STPTYRES';
+                        }
+                    }
+                }
+            }
+
+            // Part 2
+            $wheel_tyre_size_mapping = [
+                'size_14' => 47,
+                'size_15' => 48,
+                'size_16' => 49,
+                'size_17' => 50,
+                'size_18' => 51,
+                'size_19' => 52,
+                'size_20' => 53,
+                'size_21' => 54,
+                'size_22' => 55,
+                'size_23' => 56,
+            ];
+            $fitting_sizes = [];
+            foreach($items['SalesOrderLine'] as $k => $line){
+                $product_id = wc_get_product_id_by_sku($line['eCommerceCode']);
+                $cat = get_the_terms($product_id, 'product_cat')[0]->slug;
+                if($cat==='tyre'){
+                    $tyre_size_term = get_the_terms($product_id, 'pa_tyre-size')[0];
+                    $tyre_size = explode('-', $tyre_size_term->slug)[0];
+                    if(!isset($fitting_sizes[(string)$tyre_size]['tyre'])){
+                        $fitting_sizes[(string)$tyre_size]['tyre'] = (int)$line['Quantity'];
+                    }else{
+                        $fitting_sizes[(string)$tyre_size]['tyre']+= (int)$line['Quantity'];
+                    }
+                }else if($cat==='steel-wheel'||$cat==='alloy-wheel'){
+                    $wheel_size_term = get_the_terms($product_id, 'pa_wheel-size')[0];
+                    $wheel_size = explode('-', $wheel_size_term->slug)[0];
+                    if(!isset($fitting_sizes[(string)$wheel_size]['wheel'])){
+                        $fitting_sizes[(string)$wheel_size]['wheel'] = (int)$line['Quantity'];
+                    }else{
+                        $fitting_sizes[(string)$wheel_size]['wheel']+= (int)$line['Quantity'];
+                    }
+                }
+            }
+            if(get_post_meta($order->get_ID(), '_national_fitting_type', true)==='garage'){
+                // Get the garage data
+                $search_garage_id = get_post_meta($order->get_ID(), '_national_fitting_garage_id', true);
+                $garage_data = $this->garages[array_search($search_garage_id, array_column($this->garages, 0))];
+
+                if(!empty($fitting_sizes)){
+                    foreach($fitting_sizes as $fk => $fitting_size){
+                        if(isset($fitting_size['tyre'])&&isset($fitting_size['wheel'])){
+                            $qty = max($fitting_size['tyre'], $fitting_size['wheel']);
+                        }else if(isset($fitting_size['tyre'])){
+                            $qty = $fitting_size['tyre'];
+                        }else{
+                            $qty = $fitting_size['wheel'];
+                        }
+                        $col = $wheel_tyre_size_mapping['size_' . $fk];
+                        $fitting_sku = $garage_data[$col];
+                        $items['SalesOrderLine'][] = [
+                            'eCommerceCode' => $fitting_sku,
+                            'Code' => $fitting_sku,
+                            'Quantity' => $qty,
+                            'eCommerceItemID' => 'NATIONAL_FITTING_' . $fk,
+                            'ItemGross' => 0,
+                            'ItemNet' => 0,
+                            'TaxCode' => $tax_code
+                        ];
+                    }
+                }
+            }
         }
 
 
