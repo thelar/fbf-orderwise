@@ -200,11 +200,11 @@ class Fbf_Order_Wise_Admin
         $date = $datetime_o->format("Y-m-d\TH:i:s");
 
         // set required and promise dates for national fitting
-        if($order->get_meta('_is_national_fitting')){
+        /*if($order->get_meta('_is_national_fitting')){
             $required_date = new \DateTime($order->get_meta('_national_fitting_date_time')['date']);
             $required_date_f = $required_date->format('Y-m-d\TH:i:s');
             $promise_date_f = $required_date->modify('-1 day')->format('Y-m-d\TH:i:s');
-        }
+        }*/
 
         $c_price = 0;
         foreach($order->get_coupons() as $coupon){
