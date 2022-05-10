@@ -199,6 +199,13 @@ class Fbf_Order_Wise_Admin
         $datetime_o = $order->get_date_created();
         $date = $datetime_o->format("Y-m-d\TH:i:s");
 
+        // set required and promise dates for national fitting
+        if($order->get_meta('_is_national_fitting')){
+            $required_date = new \DateTime($order->get_meta('_national_fitting_date_time')['date']);
+            $required_date_f = $required_date->format('Y-m-d\TH:i:s');
+            $promise_date_f = $required_date->modify('-1 day')->format('Y-m-d\TH:i:s');
+        }
+
         $c_price = 0;
         foreach($order->get_coupons() as $coupon){
             $c = $coupon;
@@ -505,25 +512,30 @@ class Fbf_Order_Wise_Admin
             }
 
             // Get promised date
-            if(!empty($product->get_meta('_expected_back_in_stock_date')) && $product->get_stock_quantity() < 0){ // If it's less than 0 - we can assume that customer has ordered more than were in stock
-                $product_promise_date = new DateTime($product->get_meta('_expected_back_in_stock_date'));
-                $product_promise_date->modify('+7 day');
-
-                // if meta date is earlier than current day, treat it as empty
-                $today = new DateTime();
-                if($product_promise_date < $today){
-                    $product_promise_date = $today->modify('+60 day');
-                }
-            }else if(empty($product->get_meta('_expected_back_in_stock_date')) && $product->get_stock_quantity() < 0){
-                $product_promise_date = new DateTime();
-                $product_promise_date->modify('+60 day');
+            if($order->get_meta('_is_national_fitting')){
+                $new_format['PromisedDate'] = $promise_date_f;
+                $new_format['RequiredDate'] = $required_date_f;
             }else{
-                $product_promise_date = new DateTime();
-                $product_promise_date->modify('+3 day');
-            }
-            if($product_promise_date >= $promise_date){
-                $promise_date = $product_promise_date;
-                $new_format['PromisedDate'] = str_replace('+0000', '', $promise_date->format(DateTimeInterface::ISO8601));
+                if(!empty($product->get_meta('_expected_back_in_stock_date')) && $product->get_stock_quantity() < 0){ // If it's less than 0 - we can assume that customer has ordered more than were in stock
+                    $product_promise_date = new DateTime($product->get_meta('_expected_back_in_stock_date'));
+                    $product_promise_date->modify('+7 day');
+
+                    // if meta date is earlier than current day, treat it as empty
+                    $today = new DateTime();
+                    if($product_promise_date < $today){
+                        $product_promise_date = $today->modify('+60 day');
+                    }
+                }else if(empty($product->get_meta('_expected_back_in_stock_date')) && $product->get_stock_quantity() < 0){
+                    $product_promise_date = new DateTime();
+                    $product_promise_date->modify('+60 day');
+                }else{
+                    $product_promise_date = new DateTime();
+                    $product_promise_date->modify('+3 day');
+                }
+                if($product_promise_date >= $promise_date){
+                    $promise_date = $product_promise_date;
+                    $new_format['PromisedDate'] = str_replace('+0000', '', $promise_date->format(DateTimeInterface::ISO8601));
+                }
             }
         }
 
@@ -619,11 +631,7 @@ class Fbf_Order_Wise_Admin
 
             // Adds message to comments
             $msg = sprintf('Please mark the goods for the attention of 4x4tyres.co.uk to be fitted to vehicle reg %s\r\n', get_post_meta($order->get_ID(), '_national_fitting_reg_no', true));
-            if(!$new_format['SpecialInstructions']){
-                $new_format['SpecialInstructions'] = $msg;
-            }else{
-                $new_format['SpecialInstructions'].=$msg;
-            }
+            $new_format['SpecialDeliveryInstructions'] = $msg;
 
             if(count($tyre_items)){
                 // Here if there are tyres in order
