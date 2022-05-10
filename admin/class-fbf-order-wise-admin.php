@@ -243,7 +243,8 @@ class Fbf_Order_Wise_Admin
             //$garage_data = $this->garages[array_search($search_garage_id, array_column($this->garages, 0))];
 
             $required_date_f = $required_date->format('Y-m-d\TH:i:s');
-            $promise_date_f = $required_date->modify('-1 day')->format('Y-m-d\TH:i:s');
+            $promise_date_f_f = $required_date->format('Y-m-d\TH:i:s');
+            //$promise_date_f = $required_date->modify('-1 day')->format('Y-m-d\TH:i:s');
         }
 
         $c_price = 0;
