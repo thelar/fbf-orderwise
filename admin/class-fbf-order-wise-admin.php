@@ -631,7 +631,7 @@ class Fbf_Order_Wise_Admin
 
             // Adds message to comments
             $msg = sprintf('Please mark the goods for the attention of 4x4tyres.co.uk to be fitted to vehicle reg %s\r\n', get_post_meta($order->get_ID(), '_national_fitting_reg_no', true));
-            $msg = sprintf('Selected delivery date: %s', $order->get_meta('_national_fitting_date_time')['date'] . ' - ' . $order->get_meta('_national_fitting_date_time')['time']);
+            $msg.= sprintf('Selected fitting date: %s', $order->get_meta('_national_fitting_date_time')['date'] . ' - ' . $order->get_meta('_national_fitting_date_time')['time']);
             $new_format['SpecialDeliveryInstructions'] = $msg;
 
             if(count($tyre_items)){
