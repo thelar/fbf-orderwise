@@ -200,11 +200,11 @@ class Fbf_Order_Wise_Admin
         $date = $datetime_o->format("Y-m-d\TH:i:s");
 
         // set required and promise dates for national fitting
-        /*if($order->get_meta('_is_national_fitting')){
-            $required_date = new \DateTime($order->get_meta('_national_fitting_date_time')['date']);
+        if($order->get_meta('_is_national_fitting')){
+            $required_date = \DateTime::createFromFormat('d/m/y', $order->get_meta('_national_fitting_date_time')['date']);
             $required_date_f = $required_date->format('Y-m-d\TH:i:s');
             $promise_date_f = $required_date->modify('-1 day')->format('Y-m-d\TH:i:s');
-        }*/
+        }
 
         $c_price = 0;
         foreach($order->get_coupons() as $coupon){
@@ -512,10 +512,10 @@ class Fbf_Order_Wise_Admin
             }
 
             // Get promised date
-/*            if($order->get_meta('_is_national_fitting')){
+            if($order->get_meta('_is_national_fitting')){
                 $new_format['PromisedDate'] = $promise_date_f;
                 $new_format['RequiredDate'] = $required_date_f;
-            }else{*/
+            }else{
                 if(!empty($product->get_meta('_expected_back_in_stock_date')) && $product->get_stock_quantity() < 0){ // If it's less than 0 - we can assume that customer has ordered more than were in stock
                     $product_promise_date = new DateTime($product->get_meta('_expected_back_in_stock_date'));
                     $product_promise_date->modify('+7 day');
@@ -536,7 +536,7 @@ class Fbf_Order_Wise_Admin
                     $promise_date = $product_promise_date;
                     $new_format['PromisedDate'] = str_replace('+0000', '', $promise_date->format(DateTimeInterface::ISO8601));
                 }
-/*            }*/
+            }
         }
 
 
