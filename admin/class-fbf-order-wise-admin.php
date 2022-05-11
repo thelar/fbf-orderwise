@@ -709,6 +709,7 @@ class Fbf_Order_Wise_Admin
                 'size_22' => 55,
                 'size_23' => 56,
             ];
+            $garage_supplier_name_col = 75;
             $fitting_sizes = [];
             foreach($items['SalesOrderLine'] as $k => $line){
                 $product_id = wc_get_product_id_by_sku($line['eCommerceCode']);
@@ -733,8 +734,15 @@ class Fbf_Order_Wise_Admin
             }
             if(get_post_meta($order->get_ID(), '_national_fitting_type', true)==='garage'){
                 // Get the garage data
-                $search_garage_id = get_post_meta($order->get_ID(), '_national_fitting_garage_id', true);
-                $garage_data = $this->garages[array_search($search_garage_id, array_column($this->garages, 0))];
+                /*$search_garage_id = get_post_meta($order->get_ID(), '_national_fitting_garage_id', true);
+                //$garage_data = $this->garages[array_search($search_garage_id, array_column($this->garages, 0))];
+                $garage_data = null;
+                foreach($this->garages as $garage) {
+                    if ((int)$garage[0] === (int)$search_garage_id) {
+                        $garage_data = $garage;
+                        break;
+                    }
+                }*/
 
                 if(!empty($fitting_sizes)){
                     foreach($fitting_sizes as $fk => $fitting_size){
@@ -754,7 +762,9 @@ class Fbf_Order_Wise_Admin
                             'eCommerceItemID' => 'NATIONAL_FITTING_' . $fk,
                             'ItemGross' => 0,
                             'ItemNet' => 0,
-                            'TaxCode' => $tax_code
+                            'TaxCode' => $tax_code,
+                            'Direct' => 'true',
+                            'SelectedSupplier' => $garage_data[$garage_supplier_name_col],
                         ];
                     }
                 }
