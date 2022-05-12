@@ -709,7 +709,7 @@ class Fbf_Order_Wise_Admin
                 'size_22' => 55,
                 'size_23' => 56,
             ];
-            $garage_supplier_name_col = 75;
+            $garage_supplier_name_col = 67;
             $fitting_sizes = [];
             foreach($items['SalesOrderLine'] as $k => $line){
                 $product_id = wc_get_product_id_by_sku($line['eCommerceCode']);
