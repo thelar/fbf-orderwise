@@ -687,7 +687,7 @@ class Fbf_Order_Wise_Admin
                     if(isset($suppliers[$stapletons])||isset($suppliers[$micheldever])){
                         if(isset($suppliers[$micheldever])&&(int)$tyre['Quantity']<=$suppliers[$micheldever]['stock']){
                             $items['SalesOrderLine'][$k]['Direct'] = 'true';
-                            $items['SalesOrderLine'][$k]['SelectedSupplier'] = 'SOUTHAMT';
+                            $items['SalesOrderLine'][$k]['SelectedSupplier'] = 'NTF_ONLY';
                         }else if(isset($suppliers[$stapletons])&&(int)$tyre['Quantity']<=$suppliers[$stapletons]['stock']){
                             $items['SalesOrderLine'][$k]['Direct'] = 'true';
                             $items['SalesOrderLine'][$k]['SelectedSupplier'] = 'STPTYRES';
@@ -733,17 +733,6 @@ class Fbf_Order_Wise_Admin
                 }
             }
             if(get_post_meta($order->get_ID(), '_national_fitting_type', true)==='garage'){
-                // Get the garage data
-                /*$search_garage_id = get_post_meta($order->get_ID(), '_national_fitting_garage_id', true);
-                //$garage_data = $this->garages[array_search($search_garage_id, array_column($this->garages, 0))];
-                $garage_data = null;
-                foreach($this->garages as $garage) {
-                    if ((int)$garage[0] === (int)$search_garage_id) {
-                        $garage_data = $garage;
-                        break;
-                    }
-                }*/
-
                 if(!empty($fitting_sizes)){
                     foreach($fitting_sizes as $fk => $fitting_size){
                         if(isset($fitting_size['tyre'])&&isset($fitting_size['wheel'])){
