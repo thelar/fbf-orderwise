@@ -744,7 +744,7 @@ class Fbf_Order_Wise_Admin
                         }
                         $col = $wheel_tyre_size_mapping['size_' . $fk];
                         $fitting_sku = $garage_data[$col];
-                        $price_code_cols = [
+                        /*$price_code_cols = [
                             88,
                             90,
                         ];
@@ -758,17 +758,18 @@ class Fbf_Order_Wise_Admin
                                 }
                                 break;
                             }
-                        }
+                        }*/
                         $items['SalesOrderLine'][] = [
                             'eCommerceCode' => $fitting_sku,
                             'Code' => $fitting_sku,
                             'Quantity' => $qty,
                             'eCommerceItemID' => 'NATIONAL_FITTING_' . $fk,
-                            'ItemGross' => $fitting_price_gross?:0,
-                            'ItemNet' => $fitting_price?:0,
+                            //'ItemGross' => $fitting_price_gross?:0,
+                            //'ItemNet' => $fitting_price?:0,
                             'TaxCode' => $tax_code,
                             'Direct' => 'true',
                             'SelectedSupplier' => $garage_data[$garage_supplier_name_col],
+                            'SelectedSupplierCost' => '-1',
                         ];
                     }
                 }
