@@ -752,9 +752,9 @@ class Fbf_Order_Wise_Admin
                             if($garage_data[$pc] == $fitting_sku){
                                 $fitting_price = $garage_data[$pc + 1];
                                 if($tax_code==='T1'){
-                                    $fitting_price_net = round($fitting_price/1.2, 2);
+                                    $fitting_price_gross = round($fitting_price * 1.2, 2);
                                 }else{
-                                    $fitting_price_net = $fitting_price;
+                                    $fitting_price_gross = $fitting_price;
                                 }
                                 break;
                             }
@@ -764,8 +764,8 @@ class Fbf_Order_Wise_Admin
                             'Code' => $fitting_sku,
                             'Quantity' => $qty,
                             'eCommerceItemID' => 'NATIONAL_FITTING_' . $fk,
-                            'ItemGross' => $fitting_price,
-                            'ItemNet' => $fitting_price_net,
+                            'ItemGross' => $fitting_price_gross?:0,
+                            'ItemNet' => $fitting_price?:0,
                             'TaxCode' => $tax_code,
                             'Direct' => 'true',
                             'SelectedSupplier' => $garage_data[$garage_supplier_name_col],
