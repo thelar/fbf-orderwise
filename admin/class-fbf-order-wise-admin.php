@@ -417,6 +417,7 @@ class Fbf_Order_Wise_Admin
         // Line Items
         //$tyre_items = [];
         $wheel_items = [];
+        $tyre_items = [];
         $shipping_classes = [];
         $promise_date = new DateTime();
         $promise_date->modify('+3 day');
@@ -468,6 +469,8 @@ class Fbf_Order_Wise_Admin
                 foreach($cats as $cat){
                     if($cat->slug == 'alloy-wheel'||$cat->slug == 'steel-wheel'){
                         $wheel_items[] = $item_id;
+                    }else if($cat->slug == 'tyre'){
+                        $tyre_items[] = $item_id;
                     }
                 }
             }
@@ -582,7 +585,10 @@ class Fbf_Order_Wise_Admin
                     $items['SalesOrderLine'][$k]['SelectedSupplier'] = 'SOUTHAMT';
                 }
             }
-            $new_format['DeliveryMethod'] = 'Direct Delivery';
+
+            if(count($tyre_items)==count($items['SalesOrderLine'])) { //Checks that every item is a tyre
+                $new_format['DeliveryMethod'] = 'Direct Delivery';
+            }
         }
 
 
