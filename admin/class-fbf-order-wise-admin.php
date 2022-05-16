@@ -551,13 +551,17 @@ class Fbf_Order_Wise_Admin
                 $instock_at_main_supplier = true;
                 foreach($items['SalesOrderLine'] as $tyre){
                     $product_id = wc_get_product_id_by_sku($tyre['eCommerceCode']);
-                    $suppliers = get_post_meta($product_id, '_stockist_lead_times', true);
-                    if(isset($suppliers[$main_supplier_id])){
-                        if((int)$tyre['Quantity'] >= $suppliers[$main_supplier_id]['stock']){
+                    $cat = get_the_terms($product_id, 'product_cat')[0]->slug;
+                    if($cat!=='accessories'){
+                        // Should be here if it's a wheel basically
+                        $suppliers = get_post_meta($product_id, '_stockist_lead_times', true);
+                        if(isset($suppliers[$main_supplier_id])){
+                            if((int)$tyre['Quantity'] >= $suppliers[$main_supplier_id]['stock']){
+                                $instock_at_main_supplier = false;
+                            }
+                        }else{
                             $instock_at_main_supplier = false;
                         }
-                    }else{
-                        $instock_at_main_supplier = false;
                     }
                     $i++;
                 }
@@ -571,8 +575,12 @@ class Fbf_Order_Wise_Admin
         if($instock_at_main_supplier){
             //This is where we will add the XML to new_format
             foreach($items['SalesOrderLine'] as $k => $tyre){
-                $items['SalesOrderLine'][$k]['Direct'] = 'true';
-                $items['SalesOrderLine'][$k]['SelectedSupplier'] = 'SOUTHAMT';
+                $product_id = wc_get_product_id_by_sku($tyre['eCommerceCode']);
+                $cat = get_the_terms($product_id, 'product_cat')[0]->slug;
+                if($cat!=='accessories') {
+                    $items['SalesOrderLine'][$k]['Direct'] = 'true';
+                    $items['SalesOrderLine'][$k]['SelectedSupplier'] = 'SOUTHAMT';
+                }
             }
             $new_format['DeliveryMethod'] = 'Direct Delivery';
         }
