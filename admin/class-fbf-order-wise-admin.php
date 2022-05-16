@@ -490,6 +490,8 @@ class Fbf_Order_Wise_Admin
         }
 
         // Line Items
+        //$tyre_items = [];
+        $wheel_items = [];
         $tyre_items = [];
         $shipping_classes = [];
         $promise_date = new DateTime();
@@ -540,7 +542,9 @@ class Fbf_Order_Wise_Admin
 
             if(!empty($cats)){
                 foreach($cats as $cat){
-                    if($cat->slug == 'tyre'){
+                    if($cat->slug == 'alloy-wheel'||$cat->slug == 'steel-wheel'){
+                        $wheel_items[] = $item_id;
+                    }else if($cat->slug == 'tyre'){
                         $tyre_items[] = $item_id;
                     }
                 }
@@ -622,7 +626,7 @@ class Fbf_Order_Wise_Admin
         }*/
 
         if(strpos($shipping_method, 'Standard commercial')!==false){ // Checks that it's a commercial order
-            if(count($tyre_items)==count($items['SalesOrderLine'])){ //Checks that every item is a tyre
+            if(empty($wheel_items)){ // If there are NOT any wheel items in the basket
                 //Here if all items are tyres
                 //Need to check here if items are all in stock with Southam
                 $main_supplier_id = 88; //Micheldever??
@@ -630,13 +634,17 @@ class Fbf_Order_Wise_Admin
                 $instock_at_main_supplier = true;
                 foreach($items['SalesOrderLine'] as $tyre){
                     $product_id = wc_get_product_id_by_sku($tyre['eCommerceCode']);
-                    $suppliers = get_post_meta($product_id, '_stockist_lead_times', true);
-                    if(isset($suppliers[$main_supplier_id])){
-                        if((int)$tyre['Quantity'] >= $suppliers[$main_supplier_id]['stock']){
+                    $cat = get_the_terms($product_id, 'product_cat')[0]->slug;
+                    if($cat!=='accessories'){
+                        // Should be here if it's a wheel basically
+                        $suppliers = get_post_meta($product_id, '_stockist_lead_times', true);
+                        if(isset($suppliers[$main_supplier_id])){
+                            if((int)$tyre['Quantity'] >= $suppliers[$main_supplier_id]['stock']){
+                                $instock_at_main_supplier = false;
+                            }
+                        }else{
                             $instock_at_main_supplier = false;
                         }
-                    }else{
-                        $instock_at_main_supplier = false;
                     }
                     $i++;
                 }
@@ -650,10 +658,17 @@ class Fbf_Order_Wise_Admin
         if($instock_at_main_supplier){
             //This is where we will add the XML to new_format
             foreach($items['SalesOrderLine'] as $k => $tyre){
-                $items['SalesOrderLine'][$k]['Direct'] = 'true';
-                $items['SalesOrderLine'][$k]['SelectedSupplier'] = 'SOUTHAMT';
+                $product_id = wc_get_product_id_by_sku($tyre['eCommerceCode']);
+                $cat = get_the_terms($product_id, 'product_cat')[0]->slug;
+                if($cat!=='accessories') {
+                    $items['SalesOrderLine'][$k]['Direct'] = 'true';
+                    $items['SalesOrderLine'][$k]['SelectedSupplier'] = 'SOUTHAMT';
+                }
             }
-            $new_format['DeliveryMethod'] = 'Direct Delivery';
+
+            if(count($tyre_items)==count($items['SalesOrderLine'])) { //Checks that every item is a tyre
+                $new_format['DeliveryMethod'] = 'Direct Delivery';
+            }
         }
 
 
