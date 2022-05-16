@@ -415,7 +415,8 @@ class Fbf_Order_Wise_Admin
         }
 
         // Line Items
-        $tyre_items = [];
+        //$tyre_items = [];
+        $wheel_items = [];
         $shipping_classes = [];
         $promise_date = new DateTime();
         $promise_date->modify('+3 day');
@@ -465,8 +466,8 @@ class Fbf_Order_Wise_Admin
 
             if(!empty($cats)){
                 foreach($cats as $cat){
-                    if($cat->slug == 'tyre'){
-                        $tyre_items[] = $item_id;
+                    if($cat->slug == 'alloy-wheel'||$cat->slug == 'steel-wheel'){
+                        $wheel_items[] = $item_id;
                     }
                 }
             }
@@ -542,7 +543,7 @@ class Fbf_Order_Wise_Admin
         }*/
 
         if(strpos($shipping_method, 'Standard commercial')!==false){ // Checks that it's a commercial order
-            if(count($tyre_items)==count($items['SalesOrderLine'])){ //Checks that every item is a tyre
+            if(empty($wheel_items)){ // If there are NOT any wheel items in the basket
                 //Here if all items are tyres
                 //Need to check here if items are all in stock with Southam
                 $main_supplier_id = 88; //Micheldever??
