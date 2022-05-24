@@ -303,12 +303,13 @@ class Fbf_Order_Wise_Api
                             //If it's a Deko order we will need to send the tracking code to Deko and mark as fulfilled here
                             if($order->get_payment_method()==='boots_dekopay'){
                                 $update_deko = true;
+                                $WC_Dekopay = new boots_dekopay();
+                                $api_key = $WC_Dekopay->api_key;
+
                                 if(WP_ENV==='production'){
                                     $interface = 'https://secure.dekopay.com:6686/';
-                                    $api_key = 'ee7fc0aadde5c346ad103d24aa22a783';
                                 }else{
                                     $interface = 'https://test.dekopay.com:3343/';
-                                    $api_key = '1828a18b1e9ab1b809ba9891a7efa940';
                                 }
 
                                 $postFields = Array(
