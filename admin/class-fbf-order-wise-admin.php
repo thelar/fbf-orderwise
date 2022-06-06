@@ -308,6 +308,8 @@ class Fbf_Order_Wise_Admin
         if(!empty($order->get_meta('_fbf_order_data_vehicles'))){
             $msg.='Vehicle(s): ' . $order->get_meta('_fbf_order_data_vehicles') . '\r\n';
         }
+        $msg.='Sales Order Number: ' . $order->get_id() . '\r\n';
+        $msg.='Customer name: ' . $order->get_formatted_billing_full_name() . '\r\n';
         $msg.= $order->get_customer_note();
 
         //Name is either the company name or if not set the persons name
