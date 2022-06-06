@@ -726,7 +726,7 @@ class Fbf_Order_Wise_Admin
                 'size_22' => 55,
                 'size_23' => 56,
             ];
-            $garage_supplier_name_col = 67;
+            $garage_supplier_name_col = 76;
             $fitting_sizes = [];
             foreach($items['SalesOrderLine'] as $k => $line){
                 $product_id = wc_get_product_id_by_sku($line['eCommerceCode']);
@@ -762,8 +762,8 @@ class Fbf_Order_Wise_Admin
                         $col = $wheel_tyre_size_mapping['size_' . $fk];
                         $fitting_sku = $garage_data[$col];
                         $price_code_cols = [
-                            88,
-                            90,
+                            97,
+                            99,
                         ];
                         foreach($price_code_cols as $pci => $pc){
                             if($garage_data[$pc] == $fitting_sku){
