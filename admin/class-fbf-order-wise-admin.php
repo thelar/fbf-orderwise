@@ -705,6 +705,7 @@ class Fbf_Order_Wise_Admin
                         if(isset($suppliers[$micheldever])&&(int)$tyre['Quantity']<=$suppliers[$micheldever]['stock']){
                             $items['SalesOrderLine'][$k]['Direct'] = 'true';
                             $items['SalesOrderLine'][$k]['SelectedSupplier'] = 'NTF_ONLY';
+                            $items['SalesOrderLine'][$k]['SelectedSupplierCost'] = $suppliers[$micheldever]['cost'];
                         }else if(isset($suppliers[$stapletons])&&(int)$tyre['Quantity']<=$suppliers[$stapletons]['stock']){
                             $items['SalesOrderLine'][$k]['Direct'] = 'true';
                             $items['SalesOrderLine'][$k]['SelectedSupplier'] = 'STPTYRES';
