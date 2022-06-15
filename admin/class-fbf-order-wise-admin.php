@@ -299,17 +299,17 @@ class Fbf_Order_Wise_Admin
             //$product = $order->get_product_from_item($item_data);
 
             if(strpos($item_data->get_name(), 'White Letter')){
-                $msg.= $item_data->get_name() . '\r\n';
+                $msg.= $item_data->get_name() . PHP_EOL;
             }
         }
         if(!empty($order->get_meta('_fbf_order_data_manufacturers'))){
-            $msg.='Manufacturer(s): ' . $order->get_meta('_fbf_order_data_manufacturers') . '\r\n';
+            $msg.='Manufacturer(s): ' . $order->get_meta('_fbf_order_data_manufacturers') . PHP_EOL;
         }
         if(!empty($order->get_meta('_fbf_order_data_vehicles'))){
-            $msg.='Vehicle(s): ' . $order->get_meta('_fbf_order_data_vehicles') . '\r\n';
+            $msg.='Vehicle(s): ' . $order->get_meta('_fbf_order_data_vehicles') . PHP_EOL;
         }
-        $msg.='Sales Order Number: ' . $order->get_id() . '\r\n';
-        $msg.='Customer name: ' . $order->get_formatted_billing_full_name() . '\r\n';
+        $msg.='Sales Order Number: ' . $order->get_id() . PHP_EOL;
+        $msg.='Customer name: ' . $order->get_formatted_billing_full_name() . PHP_EOL;
         $msg.= $order->get_customer_note();
 
         //Name is either the company name or if not set the persons name
@@ -688,10 +688,10 @@ class Fbf_Order_Wise_Admin
             $new_format['Customer']['DeliveryAddress']['DeliveryMethod'] = $fitting_method;
 
             // Adds message to comments
-            $msg = sprintf('Please mark the goods for the attention of 4x4tyres.co.uk\r\nTo be fitted to vehicle reg %s\r\n', get_post_meta($order->get_ID(), '_national_fitting_reg_no', true));
+            $msg = sprintf('Please mark the goods for the attention of 4x4tyres.co.uk'.PHP_EOL.'To be fitted to vehicle reg %s'.PHP_EOL, get_post_meta($order->get_ID(), '_national_fitting_reg_no', true));
             $msg.= sprintf('Selected fitting date: %s', $order->get_meta('_national_fitting_date_time')['date'] . ' - ' . $order->get_meta('_national_fitting_date_time')['time']);
             $new_format['SpecialDeliveryInstructions'] = $msg;
-            $new_format['SpecialInstructions'] = $new_format['SpecialInstructions'] . '\r\n' . $msg;
+            $new_format['SpecialInstructions'] = $new_format['SpecialInstructions'] . PHP_EOL . $msg;
 
             if(count($tyre_items)){
                 // Here if there are tyres in order
