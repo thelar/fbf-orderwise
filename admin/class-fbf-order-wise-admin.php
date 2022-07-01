@@ -710,7 +710,7 @@ class Fbf_Order_Wise_Admin
                     }
                 }
 
-                $msg.= 'Fitting address: ' . $order->get_formatted_shipping_address() . PHP_EOL . 'Halfords Booking reference: ' . $order->get_meta('national_fitting_fod_booking_ref') . PHP_EOL;
+                $msg.= 'Fitting address: ' . $order->get_formatted_shipping_address() . PHP_EOL . 'Halfords Booking reference: ' . $order->get_meta('_national_fitting_fod_booking_ref') . PHP_EOL;
             }else if(get_post_meta($order->get_ID(), '_national_fitting_type', true)==='garage'){
                 $fitting_method = 'National Fitting (Garage)';
 
