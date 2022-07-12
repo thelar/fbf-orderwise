@@ -676,6 +676,9 @@ class Fbf_Order_Wise_Admin
 
         // Handle national fitting here
         if(get_post_meta($order->get_ID(), '_is_national_fitting', true)){
+            // Set on hold to true for all NFT orders
+            $new_format['OrderOnHold'] = 'true';
+
             // Part 1
             if(get_post_meta($order->get_ID(), '_national_fitting_type', true)==='fit_on_drive'){
                 $fitting_method = 'National Fitting (On the drive)';
