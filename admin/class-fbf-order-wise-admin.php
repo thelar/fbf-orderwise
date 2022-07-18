@@ -219,6 +219,9 @@ class Fbf_Order_Wise_Admin
             //$garage_data = $this->garages[array_search($garage_id, array_column($this->garages, 0))];
 
             $search_garage_id = get_post_meta($order->get_ID(), '_national_fitting_garage_id', true);
+            if(get_post_meta($order->get_ID(), '_national_fitting_type', true)==='fit_on_drive'){
+                $search_garage_id = 349; // Hardcode HME garage ID for Halfords
+            }
             foreach($this->garages as $garage){
                 if((int)$garage[0]===(int)$search_garage_id){
                     $garage_data = $garage;
@@ -753,7 +756,7 @@ class Fbf_Order_Wise_Admin
                     }
                 }
             }
-            if(get_post_meta($order->get_ID(), '_national_fitting_type', true)==='garage'){
+            if(get_post_meta($order->get_ID(), '_national_fitting_type', true)==='garage'||get_post_meta($order->get_ID(), '_national_fitting_type', true)==='fit_on_drive'){
                 if(!empty($fitting_sizes)){
                     foreach($fitting_sizes as $fk => $fitting_size){
                         if(isset($fitting_size['tyre'])&&isset($fitting_size['wheel'])){
