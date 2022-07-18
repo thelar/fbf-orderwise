@@ -784,7 +784,7 @@ class Fbf_Order_Wise_Admin
                     }
                 }
             }
-            if(get_post_meta($order->get_ID(), '_national_fitting_type', true)==='garage'){
+            if(get_post_meta($order->get_ID(), '_national_fitting_type', true)==='garage'||get_post_meta($order->get_ID(), '_national_fitting_type', true)==='fit_on_drive'){
                 if(!empty($fitting_sizes)){
                     foreach($fitting_sizes as $fk => $fitting_size){
                         if(isset($fitting_size['tyre'])&&isset($fitting_size['wheel'])){
@@ -818,7 +818,9 @@ class Fbf_Order_Wise_Admin
                         ];
                     }
                 }
-            }else if(get_post_meta($order->get_ID(), '_national_fitting_type', true)==='fit_on_drive'){
+            }
+
+            if(get_post_meta($order->get_ID(), '_national_fitting_type', true)==='fit_on_drive'){
                 // Simply add a line item for HME
                 $zones = \WC_Shipping_Zones::get_zones();
                 $settings = $this->get_national_fitting_settings();
