@@ -378,6 +378,22 @@ class Fbf_Order_Wise_Admin
         }
 
 
+        // Take off the Halfords cost if we are using On the drive
+        if(get_post_meta($order->get_ID(), '_national_fitting_type', true)==='fit_on_drive'){
+            $national_fitting_settings = $this->get_national_fitting_settings();
+            $on_the_drive_cost = $national_fitting_settings['on_the_drive_cost'];
+            $on_the_drive_inc_tax = $this->get_tax($national_fitting_settings['on_the_drive_cost']);
+            $on_the_drive_tax = $on_the_drive_inc_tax - $on_the_drive_cost;
+            $delivery_gross-= $on_the_drive_inc_tax;
+            $delivery_net-= $on_the_drive_cost;
+            $delivery_tax-= $on_the_drive_tax;
+
+            $delivery_gross = round($delivery_gross, 2);
+            $delivery_net = round($delivery_net, 2);
+            $delivery_tax = round($delivery_tax, 2);
+        }
+
+
         // create XML feed
         $new_format = [
             // 'OrderNumber' => get_post_meta($order->id, '_order_number', true),
@@ -1118,6 +1134,26 @@ class Fbf_Order_Wise_Admin
                 }
             }
         }
+    }
+
+    private function get_tax($cost)
+    {
+        //Get the tax - realistically always gonna be GB but this is for future proofing
+        $country = WC()->customer->get_country()?:'GB';
+        $rates = \WC_tax::find_rates(['country' => $country]);
+        if(!empty($rates)){
+            $orig_cost = (float) $cost;
+
+            // Add tax to the on the drive cost
+            $tax_amount = 0;
+            foreach($rates as $rate){
+                $multiplier = $rate['rate']/100;
+                $tax_amount+= $orig_cost * $multiplier;
+            }
+            $cost+=$tax_amount;
+            $cost = round($cost, 2);
+        }
+        return $cost;
     }
 }
 
