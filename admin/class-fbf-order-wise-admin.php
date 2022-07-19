@@ -630,7 +630,7 @@ class Fbf_Order_Wise_Admin
             ];
         }*/
 
-        if(strpos($shipping_method, 'Standard commercial')!==false){ // Checks that it's a commercial order
+        if($order->get_meta('_fbf_shipping_address_type')==='Commercial'){ // Checks that it's a commercial order
             if(empty($wheel_items)){ // If there are NOT any wheel items in the basket
                 //Here if all items are tyres
                 //Need to check here if items are all in stock with Southam
