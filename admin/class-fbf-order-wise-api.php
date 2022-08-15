@@ -384,7 +384,7 @@ class Fbf_Order_Wise_Api
         $headers .= "MIME-Version: 1.0" . PHP_EOL;
         $headers .= "Content-Type: text/html; charset=ISO-8859-1" . PHP_EOL;
 
-        wp_mail($to, $subject, $response_text, $headers);
+        //wp_mail($to, $subject, $response_text, $headers);
 
 
         if($inserted){
