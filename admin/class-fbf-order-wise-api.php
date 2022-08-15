@@ -375,6 +375,17 @@ class Fbf_Order_Wise_Api
         print_r($response);
         $response_text = ob_get_clean();
 
+        $subject = 'Order Wise report';
+        $from = 'website@4x4tyres.co.uk';
+        $to = 'kevin.price-ward@4x4tyres.co.uk';
+
+        $headers = "From: 4x4 Website <" . $from . '>' . PHP_EOL;
+        $headers.= "Reply-To: " . $from . PHP_EOL;
+        $headers .= "MIME-Version: 1.0" . PHP_EOL;
+        $headers .= "Content-Type: text/html; charset=ISO-8859-1" . PHP_EOL;
+
+        wp_mail($to, $subject, $response_text, $headers);
+
 
         if($inserted){
             $response_update = $wpdb->update(
