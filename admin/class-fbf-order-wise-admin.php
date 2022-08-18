@@ -193,7 +193,6 @@ class Fbf_Order_Wise_Admin
     {
 
         // require_once(ABSPATH . '/wp-content/plugins/woocommerce-customer-order-xml-export-suite/includes/class-wc-customer-order-xml-export-suite-generator.php');
-
         // format date
         //$datetime = new DateTime($order->order_date);
         $datetime_o = $order->get_date_created();
@@ -201,53 +200,55 @@ class Fbf_Order_Wise_Admin
 
         // set required and promise dates for national fitting
         if($order->get_meta('_is_national_fitting')){
-            $required_date = \DateTime::createFromFormat('d/m/y', $order->get_meta('_national_fitting_date_time')['date']);
-            $required_day = strtolower($required_date->format('l'));
-            $days_of_week = [
-                'monday',
-                'tuesday',
-                'wednesday',
-                'thursday',
-                'friday',
-                'saturday',
-                'sunday',
-            ];
-            $required_day_index = array_search($required_day, $days_of_week);
+            if($order->get_meta('_national_fitting_date_time')){
+                $required_date = \DateTime::createFromFormat('d/m/y', $order->get_meta('_national_fitting_date_time')['date']);
+                $required_day = strtolower($required_date->format('l'));
+                $days_of_week = [
+                    'monday',
+                    'tuesday',
+                    'wednesday',
+                    'thursday',
+                    'friday',
+                    'saturday',
+                    'sunday',
+                ];
+                $required_day_index = array_search($required_day, $days_of_week);
 
-            // Now work out what the working day is before the $required_date for the garage selected *eye roll*
-            //$garage_id = $order->get_meta('_national_fitting_garage_id');
-            //$garage_data = $this->garages[array_search($garage_id, array_column($this->garages, 0))];
+                // Now work out what the working day is before the $required_date for the garage selected *eye roll*
+                //$garage_id = $order->get_meta('_national_fitting_garage_id');
+                //$garage_data = $this->garages[array_search($garage_id, array_column($this->garages, 0))];
 
-            $search_garage_id = get_post_meta($order->get_ID(), '_national_fitting_garage_id', true);
-            if(get_post_meta($order->get_ID(), '_national_fitting_type', true)==='fit_on_drive'){
-                $search_garage_id = 349; // Hardcode HME garage ID for Halfords
-            }
-            foreach($this->garages as $garage){
-                if((int)$garage[0]===(int)$search_garage_id){
-                    $garage_data = $garage;
-                    $garage_works_monday = $garage_data[12];
-                    $garage_works_tuesday = $garage_data[13];
-                    $garage_works_wednesday = $garage_data[14];
-                    $garage_works_thursday = $garage_data[15];
-                    $garage_works_friday = $garage_data[16];
-                    $garage_works_saturday = $garage_data[17];
-                    $garage_works_sunday = $garage_data[18];
-                    for($i=1;$i<=7;$i++){
-                        $required_date->modify('-' . $i . 'day');
-                        $check_date_day = strtolower($required_date->format('l'));
-                        if(${'garage_works_' . $check_date_day}){
-                            break;
-                        }
-                    }
-                    break;
+                $search_garage_id = get_post_meta($order->get_ID(), '_national_fitting_garage_id', true);
+                if(get_post_meta($order->get_ID(), '_national_fitting_type', true)==='fit_on_drive'){
+                    $search_garage_id = 349; // Hardcode HME garage ID for Halfords
                 }
+                foreach($this->garages as $garage){
+                    if((int)$garage[0]===(int)$search_garage_id){
+                        $garage_data = $garage;
+                        $garage_works_monday = $garage_data[12];
+                        $garage_works_tuesday = $garage_data[13];
+                        $garage_works_wednesday = $garage_data[14];
+                        $garage_works_thursday = $garage_data[15];
+                        $garage_works_friday = $garage_data[16];
+                        $garage_works_saturday = $garage_data[17];
+                        $garage_works_sunday = $garage_data[18];
+                        for($i=1;$i<=7;$i++){
+                            $required_date->modify('-' . $i . 'day');
+                            $check_date_day = strtolower($required_date->format('l'));
+                            if(${'garage_works_' . $check_date_day}){
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                }
+
+                //$garage_data = $this->garages[array_search($search_garage_id, array_column($this->garages, 0))];
+
+                $required_date_f = $required_date->format('Y-m-d\TH:i:s');
+                $promise_date_f = $required_date->format('Y-m-d\TH:i:s');
+                //$promise_date_f = $required_date->modify('-1 day')->format('Y-m-d\TH:i:s');
             }
-
-            //$garage_data = $this->garages[array_search($search_garage_id, array_column($this->garages, 0))];
-
-            $required_date_f = $required_date->format('Y-m-d\TH:i:s');
-            $promise_date_f = $required_date->format('Y-m-d\TH:i:s');
-            //$promise_date_f = $required_date->modify('-1 day')->format('Y-m-d\TH:i:s');
         }
 
         $c_price = 0;
