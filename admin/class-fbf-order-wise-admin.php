@@ -381,6 +381,22 @@ class Fbf_Order_Wise_Admin
         }
 
 
+        // Take off the Halfords cost if we are using On the drive
+        if(get_post_meta($order->get_ID(), '_national_fitting_type', true)==='fit_on_drive'){
+            $national_fitting_settings = $this->get_national_fitting_settings();
+            $on_the_drive_cost = $national_fitting_settings['on_the_drive_cost'];
+            $on_the_drive_inc_tax = $this->get_tax($national_fitting_settings['on_the_drive_cost']);
+            $on_the_drive_tax = $on_the_drive_inc_tax - $on_the_drive_cost;
+            $delivery_gross-= $on_the_drive_inc_tax;
+            $delivery_net-= $on_the_drive_cost;
+            $delivery_tax-= $on_the_drive_tax;
+
+            $delivery_gross = round($delivery_gross, 2);
+            $delivery_net = round($delivery_net, 2);
+            $delivery_tax = round($delivery_tax, 2);
+        }
+
+
         // create XML feed
         $new_format = [
             // 'OrderNumber' => get_post_meta($order->id, '_order_number', true),
@@ -682,11 +698,47 @@ class Fbf_Order_Wise_Admin
             // Set on hold to true for all NFT orders
             $new_format['OrderOnHold'] = 'true';
 
+            $msg = '';
             // Part 1
             if(get_post_meta($order->get_ID(), '_national_fitting_type', true)==='fit_on_drive'){
                 $fitting_method = 'National Fitting (On the drive)';
+
+                // Need to set the delivery address to the Hub address which is in the hubs.xlxs sheet
+                // Process the garages
+                $filename = 'hubs.xlsx';
+                if(function_exists('get_home_path')){
+                    $filepath = get_home_path() . '../supplier/azure/garages/' . $filename;
+                }else{
+                    $filepath = ABSPATH . '../../supplier/azure/garages/' . $filename;
+                }
+                if(file_exists($filepath)) {
+                    $reader = new Xlsx();
+                    $reader->setReadDataOnly(true);
+                    $spreadsheet = $reader->load($filepath);
+                    $worksheet = $spreadsheet->getActiveSheet();
+                    $hubs = $worksheet->toArray();
+
+                    if($hub = $hubs[array_search($order->get_meta('_national_fitting_fod_hub_id'), array_column($hubs, 0))]){
+                        $hub_addr_1 = $hub[1];
+                        $hub_addr_2 = $hub[2];
+                        $hub_town_city = $hub[3];
+                        $hub_county = $hub[4];
+                        $hub_postcode = $hub[5];
+                        $new_format['Customer']['DeliveryAddress']['Address1'] = $hub_addr_1?:'';
+                        $new_format['Customer']['DeliveryAddress']['Address2'] = $hub_addr_2?:'';
+                        $new_format['Customer']['DeliveryAddress']['Town'] = $hub_town_city?:'';
+                        $new_format['Customer']['DeliveryAddress']['County'] = $hub_county?:'';
+                        $new_format['Customer']['DeliveryAddress']['Postcode'] = $hub_postcode?:'';
+                    }
+                }
+
+                $msg.= 'Fitting address: ' . $order->get_formatted_shipping_address() . PHP_EOL . 'Halfords Booking reference: ' . $order->get_meta('_national_fitting_fod_booking_ref') . PHP_EOL;
+                $msg = str_replace('<br/>', PHP_EOL, $msg);
             }else if(get_post_meta($order->get_ID(), '_national_fitting_type', true)==='garage'){
                 $fitting_method = 'National Fitting (Garage)';
+
+                // Adds message to comments - garage specific
+                $msg.= sprintf('Please mark the goods for the attention of 4x4tyres.co.uk'.PHP_EOL.'To be fitted to vehicle reg %s'.PHP_EOL, get_post_meta($order->get_ID(), '_national_fitting_reg_no', true));
             }
 
             // Set the delivery method
@@ -694,7 +746,6 @@ class Fbf_Order_Wise_Admin
             $new_format['Customer']['DeliveryAddress']['DeliveryMethod'] = $fitting_method;
 
             // Adds message to comments
-            $msg = sprintf('Please mark the goods for the attention of 4x4tyres.co.uk'.PHP_EOL.'To be fitted to vehicle reg %s'.PHP_EOL, get_post_meta($order->get_ID(), '_national_fitting_reg_no', true));
             $msg.= sprintf('Selected fitting date: %s', $order->get_meta('_national_fitting_date_time')['date'] . ' - ' . $order->get_meta('_national_fitting_date_time')['time']);
             $new_format['SpecialDeliveryInstructions'] = $msg;
             $new_format['SpecialInstructions'] = $new_format['SpecialInstructions'] . PHP_EOL . $msg;
@@ -790,6 +841,27 @@ class Fbf_Order_Wise_Admin
                         ];
                     }
                 }
+            }
+
+            if(get_post_meta($order->get_ID(), '_national_fitting_type', true)==='fit_on_drive'){
+                // Simply add a line item for HME
+                $zones = \WC_Shipping_Zones::get_zones();
+                $settings = $this->get_national_fitting_settings();
+                $rates = \WC_tax::find_rates(['country' => $order->get_shipping_country()]);
+                $total_tax_rate = 0;
+                foreach ($rates as $rate) {
+                    $total_tax_rate += floatval($rate['rate']);
+                }
+                $hme_net = round($settings['on_the_drive_cost'], 2);
+                $hme_gross = round( $hme_net * (1 + ($total_tax_rate / 100)), 2 );
+                $items['SalesOrderLine'][] = [
+                    'eCommerceCode' => 'HME',
+                    'Code' => 'HME',
+                    'Quantity' => 1,
+                    'ItemGross' => $hme_gross,
+                    'ItemNet' => $hme_net,
+                    'TaxCode' => $tax_code,
+                ];
             }
         }
 
@@ -1055,6 +1127,40 @@ class Fbf_Order_Wise_Admin
         // }
 
         $item_format = [];
+    }
+
+    private function get_national_fitting_settings()
+    {
+        $zones = \WC_Shipping_Zones::get_zones();
+        foreach ($zones as $zone) {
+            if ($zone['zone_name'] === 'UK') {
+                foreach ($zone['shipping_methods'] as $shipping_method) {
+                    if ($shipping_method->id === 'national_fitting') {
+                        return $shipping_method->instance_settings;
+                    }
+                }
+            }
+        }
+    }
+
+    private function get_tax($cost)
+    {
+        //Get the tax - realistically always gonna be GB but this is for future proofing
+        $country = WC()->customer->get_country()?:'GB';
+        $rates = \WC_tax::find_rates(['country' => $country]);
+        if(!empty($rates)){
+            $orig_cost = (float) $cost;
+
+            // Add tax to the on the drive cost
+            $tax_amount = 0;
+            foreach($rates as $rate){
+                $multiplier = $rate['rate']/100;
+                $tax_amount+= $orig_cost * $multiplier;
+            }
+            $cost+=$tax_amount;
+            $cost = round($cost, 2);
+        }
+        return $cost;
     }
 }
 
