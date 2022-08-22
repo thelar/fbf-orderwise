@@ -734,6 +734,7 @@ class Fbf_Order_Wise_Admin
                 }
 
                 $msg.= 'Fitting address: ' . $order->get_formatted_shipping_address() . PHP_EOL . 'Halfords Booking reference: ' . $order->get_meta('_national_fitting_fod_booking_ref') . PHP_EOL;
+                $msg.= sprintf('To be fitted to vehicle reg %s'.PHP_EOL, get_post_meta($order->get_ID(), '_national_fitting_reg_no', true));
                 $msg = str_replace('<br/>', PHP_EOL, $msg);
             }else if(get_post_meta($order->get_ID(), '_national_fitting_type', true)==='garage'){
                 $fitting_method = 'National Fitting (Garage)';
