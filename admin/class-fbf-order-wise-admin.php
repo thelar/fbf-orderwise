@@ -863,6 +863,7 @@ class Fbf_Order_Wise_Admin
                     'ItemGross' => $hme_gross,
                     'ItemNet' => $hme_net,
                     'TaxCode' => $tax_code,
+                    'Direct' => 'true'
                 ];
             }
         }
