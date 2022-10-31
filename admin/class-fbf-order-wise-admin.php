@@ -84,21 +84,6 @@ class Fbf_Order_Wise_Admin
         // add_filter('wc_customer_order_xml_export_suite_orders_xml', array($this, 'sv_wc_xml_export_output'), 10, 3);
         //add_filter('wc_customer_order_xml_export_suite_order_export_format', array($this, 'sv_wc_xml_export_order_format'), 10, 3);
         //add_filter('wc_customer_order_xml_export_suite_order_line_item', array($this, 'sv_wc_xml_export_line_item_addons'), 10, 3);
-
-        // Process the garages
-        $filename = 'garages.xlsx';
-        if(function_exists('get_home_path')){
-            $filepath = get_home_path() . '../supplier/azure/garages/' . $filename;
-        }else{
-            $filepath = ABSPATH . '../../supplier/azure/garages/' . $filename;
-        }
-        if(file_exists($filepath)) {
-            $reader = new Xlsx();
-            $reader->setReadDataOnly(true);
-            $spreadsheet = $reader->load($filepath);
-            $worksheet = $spreadsheet->getActiveSheet();
-            $this->garages = $worksheet->toArray();
-        }
     }
 
     /**
@@ -191,6 +176,20 @@ class Fbf_Order_Wise_Admin
 
     function sv_wc_xml_export_order_item_format($order_data, $order)
     {
+        // Process the garages
+        $filename = 'garages.xlsx';
+        if(function_exists('get_home_path')){
+            $filepath = get_home_path() . '../supplier/azure/garages/' . $filename;
+        }else{
+            $filepath = ABSPATH . '../../supplier/azure/garages/' . $filename;
+        }
+        if(file_exists($filepath)) {
+            $reader = new Xlsx();
+            $reader->setReadDataOnly(true);
+            $spreadsheet = $reader->load($filepath);
+            $worksheet = $spreadsheet->getActiveSheet();
+            $this->garages = $worksheet->toArray();
+        }
 
         // require_once(ABSPATH . '/wp-content/plugins/woocommerce-customer-order-xml-export-suite/includes/class-wc-customer-order-xml-export-suite-generator.php');
         // format date
