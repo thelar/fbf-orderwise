@@ -547,8 +547,10 @@ class Fbf_Order_Wise_Admin
                 $sku = $product->get_sku();
             }
 
-            // create array
-            $items['SalesOrderLine'][] = [
+            //Is it a tyre
+            $cats = get_the_terms($product_id, 'product_cat');
+
+            $item_a = [
                 'eCommerceCode' => $sku,
                 'Code' => $sku,
                 'Quantity' => $item_data->get_quantity(),
@@ -558,18 +560,29 @@ class Fbf_Order_Wise_Admin
                 'TaxCode' => $tax_code
             ];
 
-            //Is it a tyre
-            $cats = get_the_terms($product_id, 'product_cat');
-
             if(!empty($cats)){
                 foreach($cats as $cat){
                     if($cat->slug == 'alloy-wheel'||$cat->slug == 'steel-wheel'){
                         $wheel_items[] = $item_id;
                     }else if($cat->slug == 'tyre'){
                         $tyre_items[] = $item_id;
+
+                        // Is it price matched
+                        if(get_post_meta($product->get_id(), '_price_match', true)){
+                            $item_a['Analysis'] = [
+                                'L1' => 'true'
+                            ];
+                        }else{
+                            $item_a['Analysis'] = [
+                                'L1' => 'false'
+                            ];
+                        }
                     }
                 }
             }
+
+            // create array
+            $items['SalesOrderLine'][] = $item_a;
 
             // Sort into shipping classes
             if($is_retail_fitting){
