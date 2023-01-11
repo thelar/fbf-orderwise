@@ -705,6 +705,49 @@ class Fbf_Order_Wise_Admin
             }
         }
 
+        // Radar tyres
+        if(empty($wheel_items)){
+            $only_radar = true;
+            // Check for Radar tyres
+            foreach($items['SalesOrderLine'] as $k => $tyre){
+                $product_id = wc_get_product_id_by_sku($tyre['eCommerceCode']);
+                $brand_term = get_the_terms($product_id, 'pa_brand-name')[0];
+                if(substr($brand_term->slug, 0, 5)!=='radar'){
+                    $only_radar = false;
+                }
+            }
+
+            if($only_radar){
+                foreach($items['SalesOrderLine'] as $k => $tyre){
+                    $suppliers = get_post_meta($product_id, '_stockist_lead_times', true);
+                    $cheapest_supplier_cost = null;
+                    $cheapest_supplier_name = null;
+                    $cheapest_supplier_id = null;
+                    foreach($suppliers as $sk => $s){
+                        if($s['stock'] >= $tyre['Quantity']){
+                            if(is_null($cheapest_supplier_cost)){
+                                $cheapest_supplier_cost = $s['cost'];
+                                $cheapest_supplier_name = $s['name'];
+                                $cheapest_supplier_id = $sk;
+                            }else{
+                                if($s['cost'] < $cheapest_supplier_cost){
+                                    $cheapest_supplier_cost = $s['cost'];
+                                    $cheapest_supplier_name = $s['name'];
+                                    $cheapest_supplier_id = $sk;
+                                }
+                            }
+                        }
+                    }
+
+                    if(!is_null($cheapest_supplier_cost)){
+                        $items['SalesOrderLine'][$k]['Direct'] = 'true';
+                        $items['SalesOrderLine'][$k]['SelectedSupplier'] = $cheapest_supplier_name;
+                        $items['SalesOrderLine'][$k]['SelectedSupplierCost'] = $cheapest_supplier_cost;
+                    }
+                }
+            }
+        }
+
 
         // Handle national fitting here
         if(get_post_meta($order->get_ID(), '_is_national_fitting', true)){
