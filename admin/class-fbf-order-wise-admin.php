@@ -741,7 +741,7 @@ class Fbf_Order_Wise_Admin
 
                     if(!is_null($cheapest_supplier_cost)){
                         $items['SalesOrderLine'][$k]['Direct'] = 'true';
-                        $items['SalesOrderLine'][$k]['SelectedSupplier'] = $cheapest_supplier_name;
+                        $items['SalesOrderLine'][$k]['SelectedSupplier'] = $this->get_supplier_code($cheapest_supplier_id);
                         $items['SalesOrderLine'][$k]['SelectedSupplierCost'] = $cheapest_supplier_cost;
                     }
                 }
@@ -1236,6 +1236,22 @@ class Fbf_Order_Wise_Admin
             $cost = round($cost, 2);
         }
         return $cost;
+    }
+
+    private function get_supplier_code($id)
+    {
+        $supplier = null;
+        switch($id){
+            case '88':
+                $supplier = 'TYRESPOT';
+                break;
+            case '32':
+                $supplier = 'EDEN';
+                break;
+            default:
+                break;
+        }
+        return $supplier;
     }
 }
 
