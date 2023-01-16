@@ -1246,7 +1246,7 @@ class Fbf_Order_Wise_Admin
                 $supplier = 'TYRESPOT';
                 break;
             case '32':
-                $supplier = 'EDEN';
+                $supplier = 'EDENTYRE';
                 break;
             default:
                 break;
