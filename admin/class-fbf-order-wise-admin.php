@@ -1157,6 +1157,20 @@ class Fbf_Order_Wise_Admin
             ];
         }
 
+        // Remove $c_price and $f_price from totals
+        if($c_price > 0 || $f_price > 0){
+            $total_discount_net = $c_price + $f_price; // Note it is exc. of tax
+            if($tax_pc > 0){
+                $total_discount_gross = ($total_discount_net/100) * $tax_pc;
+            }else{
+                $total_discount_gross = $total_discount_net;
+            }
+
+            $new_format['OrderGross'] = $new_format['OrderGross'] - $total_discount_gross;
+            $new_format['OrderNet'] = $new_format['OrderNet'] - $total_discount_net;
+            $new_format['OrderTax'] = $new_format['OrderGross'] - $new_format['OrderNet'];
+        }
+
         return $new_format;
     }
 
