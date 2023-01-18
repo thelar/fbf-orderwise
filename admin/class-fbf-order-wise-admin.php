@@ -661,9 +661,9 @@ class Fbf_Order_Wise_Admin
             }
         }
 
-        $total_net+= $shipping_net;
-        $total_gross+= $shipping_gross;
-        $total_tax = $total_gross - $total_net;
+        $total_net+= $new_format['DeliveryNet'];
+        $total_gross+= $new_format['DeliveryGross'];
+        $total_tax = $new_format['DeliveryTax'];
         $new_format['OrderGross'] = $total_gross;
         $new_format['OrderNet'] = $total_net;
         $new_format['OrderTax'] = $total_tax;
