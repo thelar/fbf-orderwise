@@ -535,23 +535,23 @@ class Fbf_Order_Wise_Admin
             }*/
 
             // Re-calculate
-            $tax = 0;
+            $tax_pc = 0;
             if(!empty($order->get_taxes())){
                 foreach($order->get_taxes() as $tax){
-                    $tax+= $tax->get_rate_percent();
+                    $tax_pc+= $tax->get_rate_percent();
                 }
             }
             $product_net = $product->get_regular_price();
-            $product_gross = $product_net + (($product_net/100) * $tax);
+            $product_gross = $product_net + (($product_net/100) * $tax_pc);
             $line_net = $product_net * $item_data->get_quantity();
             $line_gross = $product_gross * $item_data->get_quantity();
 
             $total_net+= $line_net;
             $total_gross+= $line_gross;
 
-            $item_net = round($item_data->get_subtotal()/$item_data->get_quantity(), 2);
-            $item_tax = round($item_data->get_subtotal_tax()/$item_data->get_quantity(), 2);
-            $item_gross = $item_net + $item_tax;
+            //$item_net = round($item_data->get_subtotal()/$item_data->get_quantity(), 2);
+            //$item_tax = round($item_data->get_subtotal_tax()/$item_data->get_quantity(), 2);
+            //$item_gross = $item_net + $item_tax;
 
             // skip loop if not product found
             if (!$product) {
@@ -572,8 +572,8 @@ class Fbf_Order_Wise_Admin
                 'Code' => $sku,
                 'Quantity' => $item_data->get_quantity(),
                 'eCommerceItemID' => $product->get_id(),
-                'ItemGross' => $item_gross,
-                'ItemNet' => $item_net,
+                'ItemGross' => $product_gross,
+                'ItemNet' => $product_net,
                 'TaxCode' => $tax_code
             ];
 
@@ -663,7 +663,7 @@ class Fbf_Order_Wise_Admin
 
         $total_net+= $shipping_net;
         $total_gross+= $shipping_gross;
-        $total_tax = $shipping_gross - $shipping_net;
+        $total_tax = $total_gross - $total_net;
         $new_format['OrderGross'] = $total_gross;
         $new_format['OrderNet'] = $total_net;
         $new_format['OrderTax'] = $total_tax;
