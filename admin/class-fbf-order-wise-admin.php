@@ -1161,7 +1161,7 @@ class Fbf_Order_Wise_Admin
         if($c_price > 0 || $f_price > 0){
             $total_discount_net = $c_price + $f_price; // Note it is exc. of tax
             if($tax_pc > 0){
-                $total_discount_gross = ($total_discount_net/100) * $tax_pc;
+                $total_discount_gross = (($total_discount_net/100) * $tax_pc) + $total_discount_net;
             }else{
                 $total_discount_gross = $total_discount_net;
             }
