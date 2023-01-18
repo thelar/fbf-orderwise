@@ -517,10 +517,12 @@ class Fbf_Order_Wise_Admin
         $shipping_classes = [];
         $promise_date = new DateTime();
         $promise_date->modify('+3 day');
+
+        $total_net = 0;
+        $total_gross = 0;
         foreach ($order->get_items() as $item_id => $item_data) {
             $product = $order->get_product_from_item($item_data);
             $product_id = $product->get_parent_id()?:$product->get_id();
-
 
             /*$taxes = $order->get_taxes();
             $price_inc_tax = $product->get_regular_price();
@@ -531,6 +533,21 @@ class Fbf_Order_Wise_Admin
                     $price_inc_tax+= ($product->get_regular_price()/100) * $tax->get_rate_percent();
                 }
             }*/
+
+            // Re-calculate
+            $tax = 0;
+            if(!empty($order->get_taxes())){
+                foreach($order->get_taxes() as $tax){
+                    $tax+= $tax->get_rate_percent();
+                }
+            }
+            $product_net = $product->get_regular_price();
+            $product_gross = $product_net + (($product_net/100) * $tax);
+            $line_net = $product_net * $item_data->get_quantity();
+            $line_gross = $product_gross * $item_data->get_quantity();
+
+            $total_net+= $line_net;
+            $total_gross+= $line_gross;
 
             $item_net = round($item_data->get_subtotal()/$item_data->get_quantity(), 2);
             $item_tax = round($item_data->get_subtotal_tax()/$item_data->get_quantity(), 2);
@@ -619,6 +636,8 @@ class Fbf_Order_Wise_Admin
         }
 
 
+
+
         if($is_retail_fitting && !empty($shipping_classes)){
             foreach($shipping_classes as $ck => $cv){
                 if($ck==='tyre'){
@@ -641,6 +660,16 @@ class Fbf_Order_Wise_Admin
                 }
             }
         }
+
+        $total_net+= $shipping_net;
+        $total_gross+= $shipping_gross;
+        $total_tax = $shipping_gross - $shipping_net;
+        $new_format['OrderGross'] = $total_gross;
+        $new_format['OrderNet'] = $total_net;
+        $new_format['OrderTax'] = $total_tax;
+
+
+
 
 
 
