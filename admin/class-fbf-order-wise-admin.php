@@ -401,6 +401,7 @@ class Fbf_Order_Wise_Admin
         $new_format = [
             // 'OrderNumber' => get_post_meta($order->id, '_order_number', true),
             'OrderNumber' => $order->get_id(),
+            'OrderStatusID' => '1',
             'OrderDate' => $date,
             'OrderAnalysis' => get_post_meta($order->get_id(), '_order_analysis', true),
             'SpecialInstructions' => $msg,
