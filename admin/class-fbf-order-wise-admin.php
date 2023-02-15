@@ -401,7 +401,6 @@ class Fbf_Order_Wise_Admin
         $new_format = [
             // 'OrderNumber' => get_post_meta($order->id, '_order_number', true),
             'OrderNumber' => $order->get_id(),
-            'OrderStatusID' => '1',
             'OrderDate' => $date,
             'OrderAnalysis' => get_post_meta($order->get_id(), '_order_analysis', true),
             'SpecialInstructions' => $msg,
@@ -781,9 +780,6 @@ class Fbf_Order_Wise_Admin
 
         // Handle national fitting here
         if(get_post_meta($order->get_ID(), '_is_national_fitting', true)){
-            // Set on hold to true for all NFT orders
-            $new_format['OrderOnHold'] = 'true';
-
             $msg = '';
             // Part 1
             if(get_post_meta($order->get_ID(), '_national_fitting_type', true)==='fit_on_drive'){
@@ -821,6 +817,7 @@ class Fbf_Order_Wise_Admin
                 $msg.= 'Fitting address: ' . $order->get_formatted_shipping_address() . PHP_EOL . 'Halfords Booking reference: ' . $order->get_meta('_national_fitting_fod_booking_ref') . PHP_EOL;
                 $msg.= sprintf('To be fitted to vehicle reg %s'.PHP_EOL, get_post_meta($order->get_ID(), '_national_fitting_reg_no', true));
                 $msg = str_replace('<br/>', PHP_EOL, $msg);
+
             }else if(get_post_meta($order->get_ID(), '_national_fitting_type', true)==='garage'){
                 $fitting_method = 'National Fitting (Garage)';
 
@@ -847,6 +844,7 @@ class Fbf_Order_Wise_Admin
                 // Look for Micheldever or Stapletons
                 $micheldever = 88;
                 $stapletons = 89;
+                $is_mts_supplier = false;
                 foreach($items['SalesOrderLine'] as $k => $tyre){
                     $product_id = wc_get_product_id_by_sku($tyre['eCommerceCode']);
                     $suppliers = get_post_meta($product_id, '_stockist_lead_times', true);
@@ -860,6 +858,23 @@ class Fbf_Order_Wise_Admin
                             $items['SalesOrderLine'][$k]['SelectedSupplier'] = 'STPTYRES';
                         }
                     }
+                    if(isset($suppliers[$micheldever])){
+                        $is_mts_supplier = true;
+                    }
+                }
+
+                // Handle the OrderOnHold status
+                if(get_post_meta($order->get_ID(), '_national_fitting_type', true)==='garage'){
+                    $contracts_agreed_col = 104; //Column DA
+                    if($garage_data[$contracts_agreed_col]===false){
+                        $new_format['OrderOnHold'] = 'true';
+                    }else{
+                        if($is_mts_supplier){
+                            $new_format['OrderOnHold'] = 'false';
+                        }
+                    }
+                }else{
+                    $new_format['OrderOnHold'] = 'true';
                 }
             }
 
