@@ -1301,7 +1301,7 @@ class Fbf_Order_Wise_Admin
     {
         $supplier = null;
         switch($id){
-            case '88':
+            case '182':
                 $supplier = 'TYRESPOT';
                 break;
             case '32':
