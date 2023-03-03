@@ -970,6 +970,11 @@ class Fbf_Order_Wise_Admin
                     'TaxCode' => $tax_code,
                     'Direct' => 'true'
                 ];
+
+                // Now need to add back onto OrderGross, OrderNet and OrderTax to balance out
+                $new_format['OrderGross']+= $hme_gross;
+                $new_format['OrderNet']+= $hme_net;
+                $new_format['OrderTax']+= $hme_gross - $hme_net;
             }
         }
 
