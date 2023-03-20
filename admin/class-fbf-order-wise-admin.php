@@ -1090,6 +1090,9 @@ class Fbf_Order_Wise_Admin
                 case 47173:
                     $f_name = 'sales_discount_jb';
                     break;
+                case 47796:
+                    $f_name = 'sales_discount_hn';
+                    break;
                 default:
                     $f_name = 'sales_discount_unknown';
                     break;
