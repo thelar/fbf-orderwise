@@ -752,6 +752,7 @@ class Fbf_Order_Wise_Admin
                     $cheapest_supplier_cost = null;
                     $cheapest_supplier_name = null;
                     $cheapest_supplier_id = null;
+
                     foreach($suppliers as $sk => $s){
                         if($s['stock'] >= $tyre['Quantity']){
                             if(is_null($cheapest_supplier_cost)){
@@ -976,9 +977,24 @@ class Fbf_Order_Wise_Admin
                 $new_format['OrderNet']+= $hme_net;
                 $new_format['OrderTax']+= $hme_gross - $hme_net;
             }
+        }else{
+            // It's not national fitting
+            if(count($tyre_items)){
+                $micheldever = 88;
+                foreach($items['SalesOrderLine'] as $k => $tyre){
+                    $product_id = wc_get_product_id_by_sku($tyre['eCommerceCode']);
+                    $suppliers = get_post_meta($product_id, '_stockist_lead_times', true);
+                    $brand_term = get_the_terms($product_id, 'pa_brand-name')[0];
+                    if(substr($brand_term->slug, 0, 6)!=='cooper'){
+                        if(isset($suppliers[$micheldever])&&(int)$tyre['Quantity']<=$suppliers[$micheldever]['stock']){
+                            $items['SalesOrderLine'][$k]['Direct'] = 'true';
+                            $items['SalesOrderLine'][$k]['SelectedSupplier'] = $this->get_supplier_code((string)$micheldever);
+                            $items['SalesOrderLine'][$k]['SelectedSupplierCost'] = $suppliers[$micheldever]['cost'];
+                        }
+                    }
+                }
+            }
         }
-
-
         $new_format['Lines'] = $items;
 
         //Add delivery cost for FedEx orders
@@ -1323,6 +1339,9 @@ class Fbf_Order_Wise_Admin
                 break;
             case '32':
                 $supplier = 'EDENTYRE';
+                break;
+            case '88':
+                $supplier = 'SOUTHAMT';
                 break;
             default:
                 break;
