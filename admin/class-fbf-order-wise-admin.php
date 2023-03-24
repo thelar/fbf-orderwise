@@ -987,7 +987,6 @@ class Fbf_Order_Wise_Admin
                     $brand_term = get_the_terms($product_id, 'pa_brand-name')[0];
                     if(substr($brand_term->slug, 0, 6)!=='cooper'){
                         if(isset($suppliers[$micheldever])&&(int)$tyre['Quantity']<=$suppliers[$micheldever]['stock']){
-                            $items['SalesOrderLine'][$k]['Direct'] = 'true';
                             $items['SalesOrderLine'][$k]['SelectedSupplier'] = $this->get_supplier_code((string)$micheldever);
                             $items['SalesOrderLine'][$k]['SelectedSupplierCost'] = $suppliers[$micheldever]['cost'];
                         }
