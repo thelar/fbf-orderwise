@@ -292,12 +292,16 @@ class Fbf_Order_Wise_Api
 
                             if(!empty($this->has_delivery($orderxml->deliveries))){
                                 // Send out the delivery email here
-                                $email_new_order = WC()->mailer()->get_emails()['WC_Order_Delivery'];
-                                $email_new_order->set_tracking($this->get_delivery_note($orderxml->deliveries));
-                                $email_new_order->set_tracking_link($this->get_tracking_links($orderxml->deliveries, $order));
+                                if($this->get_courier_name($orderxml->deliveries, $order)==='DX'||$this->get_courier_name($orderxml->deliveries, $order)==='APC'){
+                                    $email_new_order = WC()->mailer()->get_emails()['WC_Order_Delivery'];
+                                    $email_new_order->set_tracking($this->get_delivery_note($orderxml->deliveries));
+                                    $email_new_order->set_tracking_link($this->get_tracking_links($orderxml->deliveries, $order));
+                                    $email_new_order->set_help_text($this->get_help_text($orderxml->deliveries, $order));
+                                    $email_new_order->set_courier_to($this->get_courier_name($orderxml->deliveries, $order));
 
-                                // Sending the new Order email notification for an $order_id (order ID)
-                                $email_new_order->trigger( $order->get_order_number() );
+                                    // Sending the new Order email notification for an $order_id (order ID)
+                                    $email_new_order->trigger( $order->get_order_number() );
+                                }
                                 $order->add_order_note($this->get_delivery_note($orderxml->deliveries, true), false);
                             }
 
@@ -450,7 +454,39 @@ class Fbf_Order_Wise_Api
         $link_html = '<a href="%s">this link</a>';
         $consignment_number = (string)$deliveries->consignmentNumbers->consignmentNumber[0];
         $delivery_postcode = preg_replace('/\s+/', '', $order->get_shipping_postcode());
-        return sprintf($link_html, 'https://dx-track.com/track/4X4.aspx?consno='.$consignment_number.'&postcode='.$delivery_postcode);
+        if($this->get_courier_name($deliveries, $order)==='DX'){
+            return sprintf($link_html, 'https://dx-track.com/track/4X4.aspx?consno='.$consignment_number.'&postcode='.$delivery_postcode);
+        }else if($this->get_courier_name($deliveries, $order)==='APC'){
+            return sprintf($link_html, 'https://apc-overnight.com/track-parcel.php?id='.$consignment_number.'&postcode'.$delivery_postcode);
+        }
+    }
+
+    private function get_help_text($deliveries, \WC_Order $order)
+    {
+        if($this->get_courier_name($deliveries, $order)==='DX'){
+            return 'For further help with your delivery you can contact DX directly on 0333 241 5109.';
+        }else if($this->get_courier_name($deliveries, $order)==='APC'){
+            return 'For further help with your delivery you can contact APC directly on 9999 999 9999.';
+        }
+    }
+
+    private function get_courier_name($deliveries, \WC_Order $order)
+    {
+        switch((string)$deliveries->courierName){
+            case 'DX':
+            case 'DX DM6 Lite':
+            case 'DX DM6 Lite MTS':
+                $courier_name = 'DX';
+                break;
+            case 'APC_4x4':
+            case 'APC_Oponeo':
+                $courier_name = 'APC';
+                break;
+            default:
+                $courier_name = null;
+                break;
+        }
+        return $courier_name;
     }
 
     private function has_delivery($deliveriesXML)
