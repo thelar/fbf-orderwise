@@ -466,7 +466,7 @@ class Fbf_Order_Wise_Api
         if($this->get_courier_name($deliveries, $order)==='DX'){
             return 'For further help with your delivery you can contact DX directly on 0333 241 5109.';
         }else if($this->get_courier_name($deliveries, $order)==='APC'){
-            return 'For further help with your delivery you can contact APC directly on 9999 999 9999.';
+            return 'For further help with your delivery you can contact APC directly on 0800 37 37 37.';
         }
     }
 
