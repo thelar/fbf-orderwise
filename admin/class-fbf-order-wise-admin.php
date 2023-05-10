@@ -985,11 +985,9 @@ class Fbf_Order_Wise_Admin
                     $product_id = wc_get_product_id_by_sku($tyre['eCommerceCode']);
                     $suppliers = get_post_meta($product_id, '_stockist_lead_times', true);
                     $brand_term = get_the_terms($product_id, 'pa_brand-name')[0];
-                    if(substr($brand_term->slug, 0, 6)!=='cooper'){
-                        if(isset($suppliers[$micheldever])&&(int)$tyre['Quantity']<=$suppliers[$micheldever]['stock']){
-                            $items['SalesOrderLine'][$k]['SelectedSupplier'] = $this->get_supplier_code((string)$micheldever);
-                            $items['SalesOrderLine'][$k]['SelectedSupplierCost'] = $suppliers[$micheldever]['cost'];
-                        }
+                    if(isset($suppliers[$micheldever])&&(int)$tyre['Quantity']<=$suppliers[$micheldever]['stock']){
+                        $items['SalesOrderLine'][$k]['SelectedSupplier'] = $this->get_supplier_code((string)$micheldever);
+                        $items['SalesOrderLine'][$k]['SelectedSupplierCost'] = $suppliers[$micheldever]['cost'];
                     }
                 }
             }
