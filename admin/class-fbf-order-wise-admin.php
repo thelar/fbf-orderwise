@@ -874,8 +874,6 @@ class Fbf_Order_Wise_Admin
                             $new_format['OrderOnHold'] = 'false';
                         }
                     }
-                }else{
-                    $new_format['OrderOnHold'] = 'true';
                 }
             }
 
