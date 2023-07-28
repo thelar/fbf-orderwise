@@ -200,7 +200,12 @@ class Fbf_Order_Wise_Admin
         // set required and promise dates for national fitting
         if($order->get_meta('_is_national_fitting')){
             if($order->get_meta('_national_fitting_date_time')){
-                $required_date = \DateTime::createFromFormat('d/m/y', $order->get_meta('_national_fitting_date_time')['date'], new \DateTimeZone('Europe/London'));
+                if(strpos($order->get_meta('_national_fitting_date_time')['date'], '-')!==false){
+                    $format = 'Y-m-d';
+                }else{
+                    $format = 'd/m/y';
+                }
+                $required_date = \DateTime::createFromFormat($format, $order->get_meta('_national_fitting_date_time')['date'], new \DateTimeZone('Europe/London'));
                 $required_time = $order->get_meta('_national_fitting_date_time')['time']==='am'?'09':'13';
                 $required_date->setTime($required_time, 0, 0);
                 $required_date_f = $required_date->format('Y-m-d\TH:i:s');
