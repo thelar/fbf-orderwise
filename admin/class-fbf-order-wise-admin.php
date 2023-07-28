@@ -200,8 +200,11 @@ class Fbf_Order_Wise_Admin
         // set required and promise dates for national fitting
         if($order->get_meta('_is_national_fitting')){
             if($order->get_meta('_national_fitting_date_time')){
-                $required_date = \DateTime::createFromFormat('d/m/y', $order->get_meta('_national_fitting_date_time')['date']);
+                $required_date = \DateTime::createFromFormat('d/m/y', $order->get_meta('_national_fitting_date_time')['date'], new \DateTimeZone('Europe/London'));
+                $required_time = $order->get_meta('_national_fitting_date_time')['time']==='am'?'09':'13';
+                $required_date->setTime($required_time, 0, 0);
                 $required_day = strtolower($required_date->format('l'));
+
                 $days_of_week = [
                     'monday',
                     'tuesday',
@@ -625,8 +628,13 @@ class Fbf_Order_Wise_Admin
                     $product_promise_date = new DateTime();
                     $product_promise_date->modify('+60 day');
                 }else{
-                    $product_promise_date = new DateTime();
-                    $product_promise_date->modify('+3 day');
+                    if($order->get_meta('_gs_selected_date')){
+                        $product_promise_date = new DateTime($order->get_meta('_gs_selected_date'), new DateTimeZone('Europe/London'));
+                        $product_promise_date->setTime(0,0,0);
+                    }else{
+                        $product_promise_date = new DateTime();
+                        $product_promise_date->modify('+3 day');
+                    }
                 }
                 if($product_promise_date >= $promise_date){
                     $promise_date = $product_promise_date;
