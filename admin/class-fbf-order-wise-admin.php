@@ -205,7 +205,7 @@ class Fbf_Order_Wise_Admin
                 }else{
                     $format = 'd/m/y';
                 }
-                $required_date = \DateTime::createFromFormat($format, $order->get_meta('_national_fitting_date_time')['date'], new \DateTimeZone('Europe/London'));
+                $required_date = \DateTime::createFromFormat($format, $order->get_meta('_national_fitting_date_time')['date']);
                 $required_time = $order->get_meta('_national_fitting_date_time')['time']==='am'?'09':'13';
                 $required_date->setTime($required_time, 0, 0);
                 $required_date_f = $required_date->format('Y-m-d\TH:i:s');
@@ -590,7 +590,7 @@ class Fbf_Order_Wise_Admin
                     $product_promise_date->modify('+60 day');
                 }else{
                     if($order->get_meta('_gs_selected_date')){
-                        $product_promise_date = new DateTime($order->get_meta('_gs_selected_date'), new DateTimeZone('Europe/London'));
+                        $product_promise_date = new DateTime($order->get_meta('_gs_selected_date'));
                         $product_promise_date->setTime(0,0,0);
                     }else{
                         $product_promise_date = new DateTime();
@@ -599,7 +599,7 @@ class Fbf_Order_Wise_Admin
                 }
                 if($product_promise_date >= $promise_date){
                     $promise_date = $product_promise_date;
-                    $new_format['PromisedDate'] = str_replace('+0000', '', $promise_date->format(DateTimeInterface::ISO8601));
+                    $new_format['PromisedDate'] = str_replace(['+0000', '+0100'], '', $promise_date->format(DateTimeInterface::ISO8601));
                 }
             }
         }
