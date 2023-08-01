@@ -200,50 +200,14 @@ class Fbf_Order_Wise_Admin
         // set required and promise dates for national fitting
         if($order->get_meta('_is_national_fitting')){
             if($order->get_meta('_national_fitting_date_time')){
-                $required_date = \DateTime::createFromFormat('d/m/y', $order->get_meta('_national_fitting_date_time')['date']);
-                $required_day = strtolower($required_date->format('l'));
-                $days_of_week = [
-                    'monday',
-                    'tuesday',
-                    'wednesday',
-                    'thursday',
-                    'friday',
-                    'saturday',
-                    'sunday',
-                ];
-                $required_day_index = array_search($required_day, $days_of_week);
-
-                // Now work out what the working day is before the $required_date for the garage selected *eye roll*
-                //$garage_id = $order->get_meta('_national_fitting_garage_id');
-                //$garage_data = $this->garages[array_search($garage_id, array_column($this->garages, 0))];
-
-                $search_garage_id = get_post_meta($order->get_ID(), '_national_fitting_garage_id', true);
-                if(get_post_meta($order->get_ID(), '_national_fitting_type', true)==='fit_on_drive'){
-                    $search_garage_id = 349; // Hardcode HME garage ID for Halfords
+                if(strpos($order->get_meta('_national_fitting_date_time')['date'], '-')!==false){
+                    $format = 'Y-m-d';
+                }else{
+                    $format = 'd/m/y';
                 }
-                foreach($this->garages as $garage){
-                    if((int)$garage[0]===(int)$search_garage_id){
-                        $garage_data = $garage;
-                        $garage_works_monday = $garage_data[12];
-                        $garage_works_tuesday = $garage_data[13];
-                        $garage_works_wednesday = $garage_data[14];
-                        $garage_works_thursday = $garage_data[15];
-                        $garage_works_friday = $garage_data[16];
-                        $garage_works_saturday = $garage_data[17];
-                        $garage_works_sunday = $garage_data[18];
-                        for($i=1;$i<=7;$i++){
-                            $required_date->modify('-' . $i . 'day');
-                            $check_date_day = strtolower($required_date->format('l'));
-                            if(${'garage_works_' . $check_date_day}){
-                                break;
-                            }
-                        }
-                        break;
-                    }
-                }
-
-                //$garage_data = $this->garages[array_search($search_garage_id, array_column($this->garages, 0))];
-
+                $required_date = \DateTime::createFromFormat($format, $order->get_meta('_national_fitting_date_time')['date']);
+                $required_time = $order->get_meta('_national_fitting_date_time')['time']==='am'?'09':'13';
+                $required_date->setTime($required_time, 0, 0);
                 $required_date_f = $required_date->format('Y-m-d\TH:i:s');
                 $promise_date_f = $required_date->format('Y-m-d\TH:i:s');
                 //$promise_date_f = $required_date->modify('-1 day')->format('Y-m-d\TH:i:s');
@@ -625,12 +589,17 @@ class Fbf_Order_Wise_Admin
                     $product_promise_date = new DateTime();
                     $product_promise_date->modify('+60 day');
                 }else{
-                    $product_promise_date = new DateTime();
-                    $product_promise_date->modify('+3 day');
+                    if($order->get_meta('_gs_selected_date')){
+                        $product_promise_date = new DateTime($order->get_meta('_gs_selected_date'));
+                        $product_promise_date->setTime(0,0,0);
+                    }else{
+                        $product_promise_date = new DateTime();
+                        $product_promise_date->modify('+3 day');
+                    }
                 }
                 if($product_promise_date >= $promise_date){
                     $promise_date = $product_promise_date;
-                    $new_format['PromisedDate'] = str_replace('+0000', '', $promise_date->format(DateTimeInterface::ISO8601));
+                    $new_format['PromisedDate'] = str_replace(['+0000', '+0100'], '', $promise_date->format(DateTimeInterface::ISO8601));
                 }
             }
         }
