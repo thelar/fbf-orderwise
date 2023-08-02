@@ -188,7 +188,8 @@ class Fbf_Order_Wise_Admin
             $reader->setReadDataOnly(true);
             $spreadsheet = $reader->load($filepath);
             $worksheet = $spreadsheet->getActiveSheet();
-            $this->garages = $worksheet->toArray();
+            $garage_data = $worksheet->toArray();
+            $this->garages = $garage_data;
         }
 
         // require_once(ABSPATH . '/wp-content/plugins/woocommerce-customer-order-xml-export-suite/includes/class-wc-customer-order-xml-export-suite-generator.php');
@@ -205,13 +206,17 @@ class Fbf_Order_Wise_Admin
                 }else{
                     $format = 'd/m/y';
                 }
-                $required_date = \DateTime::createFromFormat($format, $order->get_meta('_national_fitting_date_time')['date']);
-                $required_time = $order->get_meta('_national_fitting_date_time')['time']==='am'?'09':'13';
-                $required_date->setTime($required_time, 0, 0);
-                $required_date_f = $required_date->format('Y-m-d\TH:i:s');
-                $promise_date_f = $required_date->format('Y-m-d\TH:i:s');
-                //$promise_date_f = $required_date->modify('-1 day')->format('Y-m-d\TH:i:s');
+                $promise_date = \DateTime::createFromFormat($format, $order->get_meta('_national_fitting_date_time')['date']);
+                $promise_time = $order->get_meta('_national_fitting_date_time')['time']==='am'?'09':'13';
+                $promise_date->setTime($promise_time, 0, 0);
             }
+        }else if($order->get_meta('_gs_selected_date')){
+            $promise_date = new DateTime($order->get_meta('_gs_selected_date'));
+            $promise_date->setTime(0, 0, 0);
+        }else{
+            $promise_date = new \DateTime();
+            $promise_date->modify('+3 day');
+            $promise_date->setTime(0, 0, 0);
         }
 
         $c_price = 0;
@@ -474,14 +479,6 @@ class Fbf_Order_Wise_Admin
             ];
         }
 
-        // Line Items
-        //$tyre_items = [];
-        $wheel_items = [];
-        $tyre_items = [];
-        $shipping_classes = [];
-        $promise_date = new DateTime();
-        $promise_date->modify('+3 day');
-
         $total_net = 0;
         $total_gross = 0;
         foreach ($order->get_items() as $item_id => $item_data) {
@@ -569,38 +566,6 @@ class Fbf_Order_Wise_Admin
             if($is_retail_fitting){
                 $shipping_class = $product->get_shipping_class();
                 $shipping_classes[$shipping_class]+=$item_data->get_quantity(); // Counts how many of each shipping class
-            }
-
-            // Get promised date
-            if($order->get_meta('_is_national_fitting')){
-                $new_format['PromisedDate'] = $promise_date_f;
-                $new_format['RequiredDate'] = $required_date_f;
-            }else{
-                if(!empty($product->get_meta('_expected_back_in_stock_date')) && $product->get_stock_quantity() < 0){ // If it's less than 0 - we can assume that customer has ordered more than were in stock
-                    $product_promise_date = new DateTime($product->get_meta('_expected_back_in_stock_date'));
-                    $product_promise_date->modify('+7 day');
-
-                    // if meta date is earlier than current day, treat it as empty
-                    $today = new DateTime();
-                    if($product_promise_date < $today){
-                        $product_promise_date = $today->modify('+60 day');
-                    }
-                }else if(empty($product->get_meta('_expected_back_in_stock_date')) && $product->get_stock_quantity() < 0){
-                    $product_promise_date = new DateTime();
-                    $product_promise_date->modify('+60 day');
-                }else{
-                    if($order->get_meta('_gs_selected_date')){
-                        $product_promise_date = new DateTime($order->get_meta('_gs_selected_date'));
-                        $product_promise_date->setTime(0,0,0);
-                    }else{
-                        $product_promise_date = new DateTime();
-                        $product_promise_date->modify('+3 day');
-                    }
-                }
-                if($product_promise_date >= $promise_date){
-                    $promise_date = $product_promise_date;
-                    $new_format['PromisedDate'] = str_replace(['+0000', '+0100'], '', $promise_date->format(DateTimeInterface::ISO8601));
-                }
             }
         }
 
@@ -795,7 +760,7 @@ class Fbf_Order_Wise_Admin
                 $msg.= sprintf('Please mark the goods for the attention of 4x4tyres.co.uk'.PHP_EOL.'To be fitted to vehicle reg %s'.PHP_EOL, get_post_meta($order->get_ID(), '_national_fitting_reg_no', true));
 
                 $contracts_agreed_col = 104; //Column DA
-                if($garage_data[$contracts_agreed_col]===false){
+                if($garage_data[$contracts_agreed_col]==='FALSE'){
                     $msg.= 'Contracts to be signed.' . PHP_EOL;
                 }
             }
@@ -836,7 +801,7 @@ class Fbf_Order_Wise_Admin
                 // Handle the OrderOnHold status
                 if(get_post_meta($order->get_ID(), '_national_fitting_type', true)==='garage'){
                     $contracts_agreed_col = 104; //Column DA
-                    if($garage_data[$contracts_agreed_col]===false){
+                    if($garage_data[$contracts_agreed_col]==='FALSE'){
                         $new_format['OrderOnHold'] = 'true';
                     }else{
                         if($is_mts_supplier){
@@ -965,67 +930,6 @@ class Fbf_Order_Wise_Admin
         if(strpos($shipping_method, 'FedEx')!==false){
            $new_format['DeliveryCost'] = $shipping_gross;
         }
-
-        /*if($c_price > 0){
-            // If the coupon name is one of the
-            if(strpos($c_name, 'checkdisc_')!==false){
-                switch($c_name){
-                    case 'checkdisc_1':
-                        $c_name = 'sales_discount_kp';
-                        break;
-                    case 'checkdisc_21':
-                        $c_name = 'sales_discount_lb';
-                        break;
-                    case 'checkdisc_22':
-                        $c_name = 'sales_discount_ct';
-                        break;
-                    case 'checkdisc_4227':
-                        $c_name = 'sales_discount_dp';
-                        break;
-                    case 'checkdisc_64':
-                        $c_name = 'sales_discount_im';
-                        break;
-                    default:
-                        $c_name = 'sales_discount_unknown';
-                        break;
-                }
-            }else if(strpos($c_name, 'custdisc_')!==false){
-                // get taken by meta on original quote
-                $order_from = get_post_meta($order->get_ID(), '_order_from_quote', true);
-                $sales_id = get_post_meta($order_from, '_taken_by', true);
-                switch($sales_id){
-                    case 1:
-                        $c_name = 'sales_discount_kp';
-                        break;
-                    case 21:
-                        $c_name = 'sales_discount_lb';
-                        break;
-                    case 22:
-                        $c_name = 'sales_discount_ct';
-                        break;
-                    case 4227:
-                        $c_name = 'sales_discount_dp';
-                        break;
-                    case 64:
-                        $c_name = 'sales_discount_im';
-                        break;
-                    default:
-                        $c_name = 'sales_discount_unknown';
-                        break;
-                }
-            }
-
-            $new_format['Dissurs'] = [
-                'SalesDissur' => [
-                    'Description' => $c_name,
-                    'Price' => $c_price,
-                    'TaxCode' => $tax_code,
-                    'GrossDiscount' => 'false'
-                ]
-            ];
-        }*/
-
-
 
         if($f_price > 0){
             $order_from = get_post_meta($order->get_ID(), '_order_from_quote', true);
@@ -1188,6 +1092,11 @@ class Fbf_Order_Wise_Admin
             $new_format['OrderGross'] = $new_format['OrderGross'] - $total_discount_gross;
             $new_format['OrderNet'] = $new_format['OrderNet'] - $total_discount_net;
             $new_format['OrderTax'] = $new_format['OrderGross'] - $new_format['OrderNet'];
+        }
+
+        // Set promise date
+        if($promise_date){
+            $new_format['PromisedDate'] = $promise_date->format('Y-m-d\TH:i:s');
         }
 
         return $new_format;
