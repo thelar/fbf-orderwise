@@ -176,6 +176,24 @@ class Fbf_Order_Wise_Admin
 
     function sv_wc_xml_export_order_item_format($order_data, $order)
     {
+        $a = 1;
+
+        // Load garages from DB
+        if($order->get_meta('_is_national_fitting')){
+            // Try to get the garage ID, first from the _national_fitting_garage_id meta
+            if($order->get_meta('_national_fitting_garage_id')){
+                $garage_id = $order->get_meta('_national_fitting_garage_id');
+            }else if($order->get_meta('_gs_selected_garage')){
+                $garage_id = $order->get_meta('_gs_selected_garage')['id'];
+            }
+            if(isset($garage_id)){
+                global $wpdb;
+                $table_name = $wpdb->prefix . 'fbf_garages';
+                $sql = sprintf('SELECT * FROM %s WHERE centre_false = \'%s\'', $table_name, $garage_id);
+                $garage_a = $wpdb->get_row($sql);
+            }
+        }
+
         // Process the garages
         $filename = 'garages.xlsx';
         if(function_exists('get_home_path')){
