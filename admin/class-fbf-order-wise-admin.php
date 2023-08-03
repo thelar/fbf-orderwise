@@ -577,7 +577,6 @@ class Fbf_Order_Wise_Admin
             $cats = get_the_terms($product_id, 'product_cat');
 
             $item_a = [
-                'eCommerceCode' => $sku,
                 'Code' => $sku,
                 'Quantity' => $item_data->get_quantity(),
                 'eCommerceItemID' => $product->get_id(),
@@ -631,7 +630,6 @@ class Fbf_Order_Wise_Admin
                 }
                 if($ck==='tyre'||$ck==='spacer'){
                     $items['SalesOrderLine'][] = [
-                        'eCommerceCode' => 'FITTING',
                         'Code' => 'FITTING',
                         'Quantity' => $cv,
                         'eCommerceItemID' => 'RETAIL_FITTING',
@@ -660,7 +658,6 @@ class Fbf_Order_Wise_Admin
 
         /*if($is_retail_fitting){
             $items['SalesOrderLine'][] = [
-                'eCommerceCode' => 'FITTING',
                 'Code' => 'FITTING',
                 'Quantity' => $shipping_line_qty,
                 'eCommerceItemID' => 'RETAIL_FITTING',
@@ -678,7 +675,7 @@ class Fbf_Order_Wise_Admin
                 $i = 0;
                 $instock_at_main_supplier = true;
                 foreach($items['SalesOrderLine'] as $tyre){
-                    $product_id = wc_get_product_id_by_sku($tyre['eCommerceCode']);
+                    $product_id = wc_get_product_id_by_sku($tyre['Code']);
                     $cat = get_the_terms($product_id, 'product_cat')[0]->slug;
                     if($cat!=='accessories'){
                         // Should be here if it's a wheel basically
@@ -703,7 +700,7 @@ class Fbf_Order_Wise_Admin
         if($instock_at_main_supplier){
             //This is where we will add the XML to new_format
             foreach($items['SalesOrderLine'] as $k => $tyre){
-                $product_id = wc_get_product_id_by_sku($tyre['eCommerceCode']);
+                $product_id = wc_get_product_id_by_sku($tyre['Code']);
                 $cat = get_the_terms($product_id, 'product_cat')[0]->slug;
                 if($cat!=='accessories') {
                     $items['SalesOrderLine'][$k]['Direct'] = 'true';
@@ -721,7 +718,7 @@ class Fbf_Order_Wise_Admin
             $only_radar = true;
             // Check for Radar tyres
             foreach($items['SalesOrderLine'] as $k => $tyre){
-                $product_id = wc_get_product_id_by_sku($tyre['eCommerceCode']);
+                $product_id = wc_get_product_id_by_sku($tyre['Code']);
                 $brand_term = get_the_terms($product_id, 'pa_brand-name')[0];
                 if(substr($brand_term->slug, 0, 5)!=='radar'){
                     $only_radar = false;
@@ -829,7 +826,7 @@ class Fbf_Order_Wise_Admin
                 $stapletons = 89;
                 $is_mts_supplier = false;
                 foreach($items['SalesOrderLine'] as $k => $tyre){
-                    $product_id = wc_get_product_id_by_sku($tyre['eCommerceCode']);
+                    $product_id = wc_get_product_id_by_sku($tyre['Code']);
                     $suppliers = get_post_meta($product_id, '_stockist_lead_times', true);
                     if(isset($suppliers[$stapletons])||isset($suppliers[$micheldever])){
                         if(isset($suppliers[$micheldever])&&(int)$tyre['Quantity']<=$suppliers[$micheldever]['stock']){
@@ -875,7 +872,7 @@ class Fbf_Order_Wise_Admin
             $garage_supplier_name_col = 76;
             $fitting_sizes = [];
             foreach($items['SalesOrderLine'] as $k => $line){
-                $product_id = wc_get_product_id_by_sku($line['eCommerceCode']);
+                $product_id = wc_get_product_id_by_sku($line['Code']);
                 $cat = get_the_terms($product_id, 'product_cat')[0]->slug;
                 if($cat==='tyre'){
                     $tyre_size_term = get_the_terms($product_id, 'pa_tyre-size')[0];
@@ -918,7 +915,6 @@ class Fbf_Order_Wise_Admin
                             }
                         }
                         $items['SalesOrderLine'][] = [
-                            'eCommerceCode' => $fitting_sku,
                             'Code' => $fitting_sku,
                             'Quantity' => $qty,
                             'eCommerceItemID' => 'NATIONAL_FITTING_' . $fk,
@@ -943,7 +939,6 @@ class Fbf_Order_Wise_Admin
                 $hme_net = round($settings['on_the_drive_cost'], 2);
                 $hme_gross = round( $hme_net * (1 + ($total_tax_rate / 100)), 2 );
                 $items['SalesOrderLine'][] = [
-                    'eCommerceCode' => 'HME',
                     'Code' => 'HME',
                     'Quantity' => 1,
                     'ItemGross' => $hme_gross,
@@ -962,7 +957,7 @@ class Fbf_Order_Wise_Admin
             if(count($tyre_items)){
                 $micheldever = 88;
                 foreach($items['SalesOrderLine'] as $k => $tyre){
-                    $product_id = wc_get_product_id_by_sku($tyre['eCommerceCode']);
+                    $product_id = wc_get_product_id_by_sku($tyre['Code']);
                     $suppliers = get_post_meta($product_id, '_stockist_lead_times', true);
                     $brand_term = get_the_terms($product_id, 'pa_brand-name')[0];
                     if(isset($suppliers[$micheldever])&&(int)$tyre['Quantity']<=$suppliers[$micheldever]['stock']){
@@ -1168,7 +1163,6 @@ class Fbf_Order_Wise_Admin
         }
 
         $arr = array(
-            'eCommerceCode'     => $product->get_sku(),
             'Code'               => $product->get_sku(),
             'Quantity'          => $item['qty'],
             'eCommerceItemID'      => $product->get_id(),
