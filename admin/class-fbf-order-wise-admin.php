@@ -257,6 +257,7 @@ class Fbf_Order_Wise_Admin
                 $promise_date = \DateTime::createFromFormat($format, $order->get_meta('_national_fitting_date_time')['date']);
                 $promise_time = $order->get_meta('_national_fitting_date_time')['time']==='am'?'09':'13';
                 $promise_date->setTime($promise_time, 0, 0);
+                $readable_date = $promise_date->format('d/m/y') . ' (' . $order->get_meta('_national_fitting_date_time')['time'] . ')';
             }
         }else if($order->get_meta('_gs_selected_date')){
             $promise_date = new DateTime($order->get_meta('_gs_selected_date'));
@@ -815,7 +816,7 @@ class Fbf_Order_Wise_Admin
             $new_format['Customer']['DeliveryAddress']['DeliveryMethod'] = $fitting_method;
 
             // Adds message to comments
-            $msg.= sprintf('Selected fitting date: %s', $order->get_meta('_national_fitting_date_time')['date'] . ' - ' . $order->get_meta('_national_fitting_date_time')['time']);
+            $msg.= sprintf('Selected fitting date: %s', $readable_date);
             $new_format['SpecialDeliveryInstructions'] = $msg;
             $new_format['SpecialInstructions'] = $new_format['SpecialInstructions'] . PHP_EOL . $msg;
 
