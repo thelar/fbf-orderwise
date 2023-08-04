@@ -181,10 +181,12 @@ class Fbf_Order_Wise_Admin
         // Load garages from DB
         if($order->get_meta('_is_national_fitting')){
             // Try to get the garage ID, first from the _national_fitting_garage_id meta
-            if($order->get_meta('_national_fitting_garage_id')){
+            if($order->get_meta('_national_fitting_garage_id')&&$order->get_meta('_national_fitting_type')==='garage'){
                 $garage_id = $order->get_meta('_national_fitting_garage_id');
-            }else if($order->get_meta('_gs_selected_garage')){
+            }else if($order->get_meta('_gs_selected_garage')&&$order->get_meta('_national_fitting_type')==='garage'){
                 $garage_id = $order->get_meta('_gs_selected_garage')['id'];
+            }else if($order->get_meta('_national_fitting_type')==='fit_on_drive'){
+                $garage_id = 349; // Halfords
             }
             if(isset($garage_id)){
                 global $wpdb;
@@ -195,7 +197,7 @@ class Fbf_Order_Wise_Admin
         }
 
         // Process the garages
-        $filename = 'garages.xlsx';
+        /*$filename = 'garages.xlsx';
         if(function_exists('get_home_path')){
             $filepath = get_home_path() . '../supplier/azure/garages/' . $filename;
         }else{
@@ -208,7 +210,7 @@ class Fbf_Order_Wise_Admin
             $worksheet = $spreadsheet->getActiveSheet();
             $garage_data = $worksheet->toArray();
             $this->garages = $garage_data;
-        }
+        }*/
 
         // require_once(ABSPATH . '/wp-content/plugins/woocommerce-customer-order-xml-export-suite/includes/class-wc-customer-order-xml-export-suite-generator.php');
         // format date
@@ -244,20 +246,20 @@ class Fbf_Order_Wise_Admin
                 //$garage_id = $order->get_meta('_national_fitting_garage_id');
                 //$garage_data = $this->garages[array_search($garage_id, array_column($this->garages, 0))];
 
-                $search_garage_id = get_post_meta($order->get_ID(), '_national_fitting_garage_id', true);
+                /*$search_garage_id = get_post_meta($order->get_ID(), '_national_fitting_garage_id', true);
                 if(get_post_meta($order->get_ID(), '_national_fitting_type', true)==='fit_on_drive'){
                     $search_garage_id = 349; // Hardcode HME garage ID for Halfords
-                }
-                foreach($this->garages as $garage){
-                    if((int)$garage[0]===(int)$search_garage_id){
-                        $garage_data = $garage;
-                        $garage_works_monday = $garage_data[12];
-                        $garage_works_tuesday = $garage_data[13];
-                        $garage_works_wednesday = $garage_data[14];
-                        $garage_works_thursday = $garage_data[15];
-                        $garage_works_friday = $garage_data[16];
-                        $garage_works_saturday = $garage_data[17];
-                        $garage_works_sunday = $garage_data[18];
+                }*/
+                //foreach($this->garages as $garage){
+                    //if((int)$garage[0]===(int)$search_garage_id){
+                        //$garage_data = $garage;
+                        $garage_works_monday = $garage_a->monday;
+                        $garage_works_tuesday = $garage_a->tuesday;
+                        $garage_works_wednesday = $garage_a->wednesday;
+                        $garage_works_thursday = $garage_a->thursday;
+                        $garage_works_friday = $garage_a->friday;
+                        $garage_works_saturday = $garage_a->saturday;
+                        $garage_works_sunday = $garage_a->sunday;
                         for($i=1;$i<=7;$i++){
                             $required_date->modify('-' . $i . 'day');
                             $check_date_day = strtolower($required_date->format('l'));
@@ -265,9 +267,9 @@ class Fbf_Order_Wise_Admin
                                 break;
                             }
                         }
-                        break;
-                    }
-                }
+                        //break;
+                    //}
+               // }
 
 
 
@@ -822,8 +824,8 @@ class Fbf_Order_Wise_Admin
                 // Adds message to comments - garage specific
                 $msg.= sprintf('Please mark the goods for the attention of 4x4tyres.co.uk'.PHP_EOL.'To be fitted to vehicle reg %s'.PHP_EOL, get_post_meta($order->get_ID(), '_national_fitting_reg_no', true));
 
-                $contracts_agreed_col = 104; //Column DA
-                if($garage_data[$contracts_agreed_col]==='FALSE'){
+                // $contracts_agreed_col = 104; //Column DA
+                if($garage_a->contracts_agreed){
                     $msg.= 'Contracts to be signed.' . PHP_EOL;
                 }
             }
@@ -864,7 +866,7 @@ class Fbf_Order_Wise_Admin
                 // Handle the OrderOnHold status
                 if(get_post_meta($order->get_ID(), '_national_fitting_type', true)==='garage'){
                     $contracts_agreed_col = 104; //Column DA
-                    if($garage_data[$contracts_agreed_col]==='FALSE'){
+                    if(!$garage_a->contracts_agreed){
                         $new_format['OrderOnHold'] = 'true';
                     }else{
                         if($is_mts_supplier){
@@ -875,7 +877,7 @@ class Fbf_Order_Wise_Admin
             }
 
             // Part 2
-            $wheel_tyre_size_mapping = [
+            /*$wheel_tyre_size_mapping = [
                 'size_14' => 47,
                 'size_15' => 48,
                 'size_16' => 49,
@@ -886,7 +888,7 @@ class Fbf_Order_Wise_Admin
                 'size_21' => 54,
                 'size_22' => 55,
                 'size_23' => 56,
-            ];
+            ];*/
             $garage_supplier_name_col = 76;
             $fitting_sizes = [];
             foreach($items['SalesOrderLine'] as $k => $line){
@@ -920,8 +922,8 @@ class Fbf_Order_Wise_Admin
                         }else{
                             $qty = $fitting_size['wheel'];
                         }
-                        $col = $wheel_tyre_size_mapping['size_' . $fk];
-                        $fitting_sku = $garage_data[$col];
+                        //$col = $wheel_tyre_size_mapping['size_' . $fk];
+                        $fitting_sku = get_object_vars($garage_a)[$fk];
                         $price_code_cols = [
                             97,
                             99,
@@ -938,7 +940,7 @@ class Fbf_Order_Wise_Admin
                             'eCommerceItemID' => 'NATIONAL_FITTING_' . $fk,
                             'TaxCode' => $tax_code,
                             'Direct' => 'true',
-                            'SelectedSupplier' => $garage_data[$garage_supplier_name_col],
+                            'SelectedSupplier' => $garage_a->supplier_name,
                             'SelectedSupplierCost' => $fitting_price?:'0',
                         ];
                     }
