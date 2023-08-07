@@ -191,7 +191,7 @@ class Fbf_Order_Wise_Admin
             if(isset($garage_id)){
                 global $wpdb;
                 $table_name = $wpdb->prefix . 'fbf_garages';
-                $sql = sprintf('SELECT * FROM %s WHERE centre_false = \'%s\'', $table_name, $garage_id);
+                $sql = sprintf('SELECT * FROM %s WHERE centre_id = \'%s\'', $table_name, $garage_id);
                 $garage_a = $wpdb->get_row($sql);
             }
         }
@@ -239,70 +239,11 @@ class Fbf_Order_Wise_Admin
                     'sunday',
                 ];
 
-                $search_garage_id = $order->get_meta('_gs_selected_garage')['id'];
-                if(get_post_meta($order->get_ID(), '_national_fitting_type', true)==='fit_on_drive'){
-                    $search_garage_id = 349; // Hardcode HME garage ID for Halfords
-                }
-
-                foreach($this->garages as $garage){
-                    if((int)$garage[0]===(int)$search_garage_id){
-                        $garage_data = $garage;
-                        $garage_works_monday = $garage_data[12];
-                        $garage_works_tuesday = $garage_data[13];
-                        $garage_works_wednesday = $garage_data[14];
-                        $garage_works_thursday = $garage_data[15];
-                        $garage_works_friday = $garage_data[16];
-                        $garage_works_saturday = $garage_data[17];
-                        $garage_works_sunday = $garage_data[18];
-                        for($i=1;$i<=7;$i++){
-                            $required_date->modify('-' . $i . 'day');
-                            $check_date_day = strtolower($required_date->format('l'));
-                            if(${'garage_works_' . $check_date_day}){
-                                break;
-                            }
-                        }
-                        break;
-                    }
-                }
-                $promise_date = \DateTime::createFromFormat($format, $order->get_meta('_gs_selected_garage')['date']);
-                $promise_time = $order->get_meta('_gs_selected_garage')['time']==='am'?'09':'13';
-                $promise_date->setTime($promise_time, 0, 0);
-                $readable_date = $promise_date->format('d/m/y') . ' (' . $order->get_meta('_gs_selected_garage')['time'] . ')';
-            }else{
-                $promise_date = new \DateTime();
-                $promise_date->modify('+3 day');
-                $promise_date->setTime(0, 0, 0);
-            }
-            /*if($order->get_meta('_national_fitting_date_time')){
-
-
-                if(strpos($order->get_meta('_national_fitting_date_time')['date'], '-')!==false){
-                    $format = 'Y-m-d';
-                }else{
-                    $format = 'd/m/y';
-                }
-
-                $required_date = \DateTime::createFromFormat($format, $order->get_meta('_national_fitting_date_time')['date']);
-                $required_day = strtolower($required_date->format('l'));
-                $days_of_week = [
-                    'monday',
-                    'tuesday',
-                    'wednesday',
-                    'thursday',
-                    'friday',
-                    'saturday',
-                    'sunday',
-                ];
-                $required_day_index = array_search($required_day, $days_of_week);
-
-                // Now work out what the working day is before the $required_date for the garage selected *eye roll*
-                //$garage_id = $order->get_meta('_national_fitting_garage_id');
-                //$garage_data = $this->garages[array_search($garage_id, array_column($this->garages, 0))];
-
-                /*$search_garage_id = get_post_meta($order->get_ID(), '_national_fitting_garage_id', true);
+                /*$search_garage_id = $order->get_meta('_gs_selected_garage')['id'];
                 if(get_post_meta($order->get_ID(), '_national_fitting_type', true)==='fit_on_drive'){
                     $search_garage_id = 349; // Hardcode HME garage ID for Halfords
                 }*/
+
                 //foreach($this->garages as $garage){
                     //if((int)$garage[0]===(int)$search_garage_id){
                         //$garage_data = $garage;
@@ -322,16 +263,16 @@ class Fbf_Order_Wise_Admin
                         }
                         //break;
                     //}
-               // }
-
-
-
-
-                $promise_date = \DateTime::createFromFormat($format, $order->get_meta('_national_fitting_date_time')['date']);
-                $promise_time = $order->get_meta('_national_fitting_date_time')['time']==='am'?'09':'13';
+                //}
+                $promise_date = \DateTime::createFromFormat($format, $order->get_meta('_gs_selected_garage')['date']);
+                $promise_time = $order->get_meta('_gs_selected_garage')['time']==='am'?'09':'13';
                 $promise_date->setTime($promise_time, 0, 0);
-                $readable_date = $promise_date->format('d/m/y') . ' (' . $order->get_meta('_national_fitting_date_time')['time'] . ')';
-            }*/
+                $readable_date = $promise_date->format('d/m/y') . ' (' . $order->get_meta('_gs_selected_garage')['time'] . ')';
+            }else{
+                $promise_date = new \DateTime();
+                $promise_date->modify('+3 day');
+                $promise_date->setTime(0, 0, 0);
+            }
         }else if($order->get_meta('_gs_selected_date')){
             $promise_date = new DateTime($order->get_meta('_gs_selected_date'));
             $promise_date->setTime(0, 0, 0);
@@ -977,14 +918,23 @@ class Fbf_Order_Wise_Admin
                             $qty = $fitting_size['wheel'];
                         }
                         //$col = $wheel_tyre_size_mapping['size_' . $fk];
-                        $fitting_sku = get_object_vars($garage_a)[$fk];
+                        $fitting_sku = get_object_vars($garage_a)['ts_' . $fk];
+
                         $price_code_cols = [
-                            97,
-                            99,
+                            'product_code',
+                            'product_code_2',
+                            'product_code_3',
                         ];
+
+                        $price_cols = [
+                            'cost',
+                            'cost_2',
+                            'cost_3',
+                        ];
+
                         foreach($price_code_cols as $pci => $pc){
-                            if($garage_data[$pc] == $fitting_sku){
-                                $fitting_price = $garage_data[$pc + 1];
+                            if($garage_a->{$pc} == $fitting_sku){
+                                $fitting_price = $garage_a->{$price_cols[$pci]};
                                 break;
                             }
                         }
