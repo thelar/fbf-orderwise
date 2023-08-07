@@ -220,7 +220,60 @@ class Fbf_Order_Wise_Admin
 
         // set required and promise dates for national fitting
         if($order->get_meta('_is_national_fitting')){
-            if($order->get_meta('_national_fitting_date_time')){
+            if($order->get_meta('_gs_selected_garage')){
+                if(strpos($order->get_meta('_gs_selected_garage')['date'], '-')!==false){
+                    $format = 'Y-m-d';
+                }else{
+                    $format = 'd/m/y';
+                }
+
+                $required_date = \DateTime::createFromFormat($format, $order->get_meta('_gs_selected_garage')['date']);
+                $required_day = strtolower($required_date->format('l'));
+                $days_of_week = [
+                    'monday',
+                    'tuesday',
+                    'wednesday',
+                    'thursday',
+                    'friday',
+                    'saturday',
+                    'sunday',
+                ];
+
+                $search_garage_id = $order->get_meta('_gs_selected_garage')['id'];
+                if(get_post_meta($order->get_ID(), '_national_fitting_type', true)==='fit_on_drive'){
+                    $search_garage_id = 349; // Hardcode HME garage ID for Halfords
+                }
+
+                foreach($this->garages as $garage){
+                    if((int)$garage[0]===(int)$search_garage_id){
+                        $garage_data = $garage;
+                        $garage_works_monday = $garage_data[12];
+                        $garage_works_tuesday = $garage_data[13];
+                        $garage_works_wednesday = $garage_data[14];
+                        $garage_works_thursday = $garage_data[15];
+                        $garage_works_friday = $garage_data[16];
+                        $garage_works_saturday = $garage_data[17];
+                        $garage_works_sunday = $garage_data[18];
+                        for($i=1;$i<=7;$i++){
+                            $required_date->modify('-' . $i . 'day');
+                            $check_date_day = strtolower($required_date->format('l'));
+                            if(${'garage_works_' . $check_date_day}){
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                }
+                $promise_date = \DateTime::createFromFormat($format, $order->get_meta('_gs_selected_garage')['date']);
+                $promise_time = $order->get_meta('_gs_selected_garage')['time']==='am'?'09':'13';
+                $promise_date->setTime($promise_time, 0, 0);
+                $readable_date = $promise_date->format('d/m/y') . ' (' . $order->get_meta('_gs_selected_garage')['time'] . ')';
+            }else{
+                $promise_date = new \DateTime();
+                $promise_date->modify('+3 day');
+                $promise_date->setTime(0, 0, 0);
+            }
+            /*if($order->get_meta('_national_fitting_date_time')){
 
 
                 if(strpos($order->get_meta('_national_fitting_date_time')['date'], '-')!==false){
@@ -277,7 +330,8 @@ class Fbf_Order_Wise_Admin
                 $promise_date = \DateTime::createFromFormat($format, $order->get_meta('_national_fitting_date_time')['date']);
                 $promise_time = $order->get_meta('_national_fitting_date_time')['time']==='am'?'09':'13';
                 $promise_date->setTime($promise_time, 0, 0);
-            }
+                $readable_date = $promise_date->format('d/m/y') . ' (' . $order->get_meta('_national_fitting_date_time')['time'] . ')';
+            }*/
         }else if($order->get_meta('_gs_selected_date')){
             $promise_date = new DateTime($order->get_meta('_gs_selected_date'));
             $promise_date->setTime(0, 0, 0);
@@ -835,7 +889,7 @@ class Fbf_Order_Wise_Admin
             $new_format['Customer']['DeliveryAddress']['DeliveryMethod'] = $fitting_method;
 
             // Adds message to comments
-            $msg.= sprintf('Selected fitting date: %s', $order->get_meta('_national_fitting_date_time')['date'] . ' - ' . $order->get_meta('_national_fitting_date_time')['time']);
+            $msg.= sprintf('Selected fitting date: %s', $readable_date);
             $new_format['SpecialDeliveryInstructions'] = $msg;
             $new_format['SpecialInstructions'] = $new_format['SpecialInstructions'] . PHP_EOL . $msg;
 
