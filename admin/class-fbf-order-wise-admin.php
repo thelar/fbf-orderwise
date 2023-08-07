@@ -1147,6 +1147,7 @@ class Fbf_Order_Wise_Admin
             ];
         }
 
+
         // Remove $c_price and $f_price from totals
         if($c_price > 0 || $f_price > 0){
             $total_discount_net = $c_price + $f_price; // Note it is exc. of tax
