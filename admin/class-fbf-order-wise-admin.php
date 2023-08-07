@@ -944,7 +944,7 @@ class Fbf_Order_Wise_Admin
                             'eCommerceItemID' => 'NATIONAL_FITTING_' . $fk,
                             'TaxCode' => $tax_code,
                             'Direct' => 'true',
-                            'SelectedSupplier' => $garage_a->supplier_name,
+                            'SelectedSupplier' => $garage_a->account_number,
                             'SelectedSupplierCost' => $fitting_price?:'0',
                         ];
                     }
