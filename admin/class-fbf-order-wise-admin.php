@@ -820,7 +820,7 @@ class Fbf_Order_Wise_Admin
                 $msg.= sprintf('Please mark the goods for the attention of 4x4tyres.co.uk'.PHP_EOL.'To be fitted to vehicle reg %s'.PHP_EOL, get_post_meta($order->get_ID(), '_national_fitting_reg_no', true));
 
                 // $contracts_agreed_col = 104; //Column DA
-                if($garage_a->contracts_agreed){
+                if(!$garage_a->contracts_agreed){
                     $msg.= 'Contracts to be signed.' . PHP_EOL;
                 }
             }
