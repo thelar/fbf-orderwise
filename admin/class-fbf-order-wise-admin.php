@@ -327,6 +327,10 @@ class Fbf_Order_Wise_Admin
             $taken_by = '';
         }
 
+        // handle ebay
+        if(!empty(get_post_meta($order->get_ID(), '_ebay_order_number', true))){
+            $taken_by = 'eBay';
+        }
 
         //Extract white lettering info
         $msg = '';
@@ -345,7 +349,7 @@ class Fbf_Order_Wise_Admin
         }
         $msg.='Sales Order Number: ' . $order->get_id() . PHP_EOL;
         $msg.='Customer name: ' . $order->get_formatted_billing_full_name() . PHP_EOL;
-        $msg.= $order->get_customer_note();
+        $msg.= $order->get_customer_note() . PHP_EOL;
 
         //Name is either the company name or if not set the persons name
         $name = $order->get_billing_company()?:$order->get_formatted_billing_full_name();
@@ -394,6 +398,11 @@ class Fbf_Order_Wise_Admin
                 break;
         }
 
+        // handle eBay
+        if(!empty(get_post_meta($order->get_ID(), '_ebay_order_number', true))){
+            $shipping_method = 'Standard residential';
+        }
+
         if(strpos($order->get_shipping_method(), 'Retail')!==false){
             //It's retail fitting
             $is_retail_fitting = true;
@@ -426,6 +435,11 @@ class Fbf_Order_Wise_Admin
             $delivery_gross = round($delivery_gross, 2);
             $delivery_net = round($delivery_net, 2);
             $delivery_tax = round($delivery_tax, 2);
+        }
+
+        // ebay orders
+        if(!empty(get_post_meta($order->get_ID(), '_ebay_order_number', true))){
+            $msg.= 'eBay order number: ' . get_post_meta($order->get_ID(), '_ebay_order_number', true) . PHP_EOL;
         }
 
 
@@ -530,6 +544,11 @@ class Fbf_Order_Wise_Admin
             default:
                 $payment_method = 'unrecognised';
                 break;
+        }
+
+        // handle ebay
+        if(!empty(get_post_meta($order->get_ID(), '_ebay_order_number', true))){
+            $payment_method = 'Paypal';
         }
 
         if($payment_method!==''){

@@ -289,7 +289,14 @@ class Fbf_Order_Wise_Api
 
                                 // Set the _delivery_info meta for eBay orders only
                                 if(get_post_meta($order->get_id(), '_ebay_order_number', true)){
-                                    update_post_meta($order->get_id(), '_delivery_info', $orderxml);
+                                    //update_post_meta($order->get_id(), '_delivery_info', $orderxml);
+
+                                    if (is_plugin_active('fbf-ebay-packages/fbf-ebay-packages.php')) {
+                                        require_once plugin_dir_path(WP_PLUGIN_DIR . '/fbf-ebay-packages/fbf-ebay-packages.php') . 'includes/class-fbf-ebay-packages-list-item.php';
+                                        $item = new Fbf_Ebay_Packages_List_Item(null, null);
+                                        $item->fulfill_order($orderxml, get_post_meta($order->get_id(), '_ebay_order_number', true));
+                                    }
+
                                 }
                             }else{
                                 $errors[$order_num][] = 'Could not update status to ' . $order_status;
