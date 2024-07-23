@@ -289,14 +289,36 @@ class Fbf_Order_Wise_Api
 
                                 // Set the _delivery_info meta for eBay orders only
                                 if(get_post_meta($order->get_id(), '_ebay_order_number', true)){
+
                                     //update_post_meta($order->get_id(), '_delivery_info', $orderxml);
 
                                     if (is_plugin_active('fbf-ebay-packages/fbf-ebay-packages.php')) {
                                         require_once plugin_dir_path(WP_PLUGIN_DIR . '/fbf-ebay-packages/fbf-ebay-packages.php') . 'includes/class-fbf-ebay-packages-list-item.php';
                                         $item = new Fbf_Ebay_Packages_List_Item(null, null);
-                                        $item->fulfill_order($orderxml, get_post_meta($order->get_id(), '_ebay_order_number', true));
+                                        $fulfillment = $item->fulfill_order($orderxml, get_post_meta($order->get_id(), '_ebay_order_number', true));
                                     }
 
+                                    $subject = sprintf('OrderWise eBay fulfillment report for order: %s', $order->get_id());
+                                    $from = 'website@4x4tyres.co.uk';
+                                    $to = 'kevin.price-ward@4x4tyres.co.uk,josh.barbor@4x4tyres.co.uk';
+
+                                    $headers = "From: 4x4 Website <" . $from . '>' . PHP_EOL;
+                                    $headers.= "Reply-To: " . $from . PHP_EOL;
+                                    $headers .= "MIME-Version: 1.0" . PHP_EOL;
+                                    $headers .= "Content-Type: text/html; charset=ISO-8859-1" . PHP_EOL;
+
+                                    $message = sprintf('<h1>eBay order number: <strong>%s</strong></h1>', get_post_meta($order->get_id(), '_ebay_order_number', true));
+
+                                    if($fulfillment){
+                                        ob_start();
+                                        echo '<pre>';
+                                        print_r($fulfillment);
+                                        echo '</pre>';
+                                        $message.= ob_get_clean();
+                                    }else{
+                                        $message.= sprintf('<p>%s</p>', '$fulfillment not set');
+                                    }
+                                    wp_mail($to, $subject, $message, $headers);
                                 }
                             }else{
                                 $errors[$order_num][] = 'Could not update status to ' . $order_status;
