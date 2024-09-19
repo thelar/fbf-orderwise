@@ -548,7 +548,7 @@ class Fbf_Order_Wise_Admin
 
         // handle ebay
         if(!empty(get_post_meta($order->get_ID(), '_ebay_order_number', true))){
-            $payment_method = 'Paypal';
+            $payment_method = 'eBay tgc';
         }
 
         if($payment_method!==''){
