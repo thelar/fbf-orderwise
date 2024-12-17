@@ -563,6 +563,7 @@ class Fbf_Order_Wise_Admin
 
         $total_net = 0;
         $total_gross = 0;
+        $env_charge = false;
         foreach ($order->get_items() as $item_id => $item_data) {
             $product = $order->get_product_from_item($item_data);
             $product_id = $product->get_parent_id()?:$product->get_id();
@@ -600,11 +601,16 @@ class Fbf_Order_Wise_Admin
             if (!$product) {
                 continue;
             }
+            $cat_term = get_the_terms($product_id, 'product_cat')[0];
 
             if(str_ends_with($product->get_sku(), '_white')){
                 $sku = str_replace('_white', '', $product->get_sku());
             }else{
                 $sku = $product->get_sku();
+            }
+
+            if($cat_term->name==='Alloy Wheel'||$cat_term->name==='Steel Wheel'||$cat_term->name==='Tyre'){
+                $env_charge = true;
             }
 
             //Is it a tyre
@@ -979,21 +985,21 @@ class Fbf_Order_Wise_Admin
                 foreach ($rates as $rate) {
                     $total_tax_rate += floatval($rate['rate']);
                 }
-                $hme_net = round($settings['on_the_drive_cost'], 2);
-                $hme_gross = round( $hme_net * (1 + ($total_tax_rate / 100)), 2 );
+                $env_net = round($settings['on_the_drive_cost'], 2);
+                $env_gross = round( $env_net * (1 + ($total_tax_rate / 100)), 2 );
                 $items['SalesOrderLine'][] = [
                     'Code' => 'HME',
                     'Quantity' => 1,
-                    'ItemGross' => $hme_gross,
-                    'ItemNet' => $hme_net,
+                    'ItemGross' => $env_gross,
+                    'ItemNet' => $env_net,
                     'TaxCode' => $tax_code,
                     'Direct' => 'true'
                 ];
 
                 // Now need to add back onto OrderGross, OrderNet and OrderTax to balance out
-                $new_format['OrderGross']+= $hme_gross;
-                $new_format['OrderNet']+= $hme_net;
-                $new_format['OrderTax']+= $hme_gross - $hme_net;
+                $new_format['OrderGross']+= $env_gross;
+                $new_format['OrderNet']+= $env_net;
+                $new_format['OrderTax']+= $env_gross - $env_net;
             }
         }else{
             // It's not national fitting
@@ -1010,6 +1016,22 @@ class Fbf_Order_Wise_Admin
                 }
             }
         }
+
+        // Handle Environmental Charge
+        if($env_charge){
+            $env_gross = 2.5;
+            $env_net = round($env_gross/1.2);
+            $env_gross = round( $env_net * (1 + ($total_tax_rate / 100)), 2 );
+            $items['SalesOrderLine'][] = [
+                'Code' => 'ENV',
+                'Quantity' => 1,
+                'ItemGross' => $env_gross,
+                'ItemNet' => $env_net,
+                'TaxCode' => $tax_code,
+                'Direct' => 'true'
+            ];
+        }
+
         $new_format['Lines'] = $items;
 
         //Add delivery cost for FedEx orders
