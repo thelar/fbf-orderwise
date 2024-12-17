@@ -1020,8 +1020,7 @@ class Fbf_Order_Wise_Admin
         // Handle Environmental Charge
         if($env_charge){
             $env_gross = 2.5;
-            $env_net = round($env_gross/1.2);
-            $env_gross = round( $env_net * (1 + ($total_tax_rate / 100)), 2 );
+            $env_net = round($env_gross/1.2, 2);
             $items['SalesOrderLine'][] = [
                 'Code' => 'ENV',
                 'Quantity' => 1,
