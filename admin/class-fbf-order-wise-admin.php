@@ -1027,7 +1027,7 @@ class Fbf_Order_Wise_Admin
                 'ItemGross' => $env_gross,
                 'ItemNet' => $env_net,
                 'TaxCode' => $tax_code,
-                'Direct' => 'true'
+                'Direct' => 'false'
             ];
         }
 
