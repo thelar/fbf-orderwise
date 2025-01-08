@@ -291,7 +291,9 @@ class Fbf_Order_Wise_Admin
 
         $f_price = 0;
         foreach($order->get_fees() as $fee){
-            $f_price+= abs($fee->get_amount());
+            if($fee->get_name()!=='Environmental Charge'){
+                $f_price+= abs($fee->get_amount());
+            }
         }
 
         // Tax code
