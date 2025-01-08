@@ -1031,6 +1031,11 @@ class Fbf_Order_Wise_Admin
                 'TaxCode' => $tax_code,
                 'Direct' => 'false'
             ];
+
+            // Add ENV to totals
+            $new_format['OrderGross']+= $env_gross;
+            $new_format['OrderNet']+= $env_net;
+            $new_format['OrderTax']+= $env_gross-$env_net;
         }
 
         $new_format['Lines'] = $items;
