@@ -1020,31 +1020,34 @@ class Fbf_Order_Wise_Admin
         }
 
         // Handle Environmental Charge
-        if($env_charge){
-            $env_gross = 2.5;
-            $env_net = round($env_gross/1.2, 2);
-            /*$items['SalesOrderLine'][] = [
-                'Code' => 'ENV',
-                'Quantity' => 1,
-                'ItemGross' => $env_gross,
-                'ItemNet' => $env_net,
-                'TaxCode' => $tax_code,
-                'Direct' => 'false'
-            ];*/
+        if(empty(get_post_meta($order->get_ID(), '_ebay_order_number', true))){ // Only add ENV charge if order is NOT eBay
+            if($env_charge){
+                $env_gross = 2.5;
+                $env_net = round($env_gross/1.2, 2);
+                /*$items['SalesOrderLine'][] = [
+                    'Code' => 'ENV',
+                    'Quantity' => 1,
+                    'ItemGross' => $env_gross,
+                    'ItemNet' => $env_net,
+                    'TaxCode' => $tax_code,
+                    'Direct' => 'false'
+                ];*/
 
-            $new_format['Dissurs']['SalesDissur'][] = [
-                'Description' => 'ENVCHARGE',
-                'Price' => $env_net,
-                'TaxCode' => 'T1',
-                'GrossDiscount' => 0,
-                'Discount' => 'N',
-            ];
+                $new_format['Dissurs']['SalesDissur'][] = [
+                    'Description' => 'ENVCHARGE',
+                    'Price' => $env_net,
+                    'TaxCode' => 'T1',
+                    'GrossDiscount' => 0,
+                    'Discount' => 'N',
+                ];
 
-            // Add ENV to totals
-            $new_format['OrderGross']+= $env_gross;
-            $new_format['OrderNet']+= $env_net;
-            $new_format['OrderTax']+= $env_gross-$env_net;
+                // Add ENV to totals
+                $new_format['OrderGross']+= $env_gross;
+                $new_format['OrderNet']+= $env_net;
+                $new_format['OrderTax']+= $env_gross-$env_net;
+            }
         }
+
 
         $new_format['Lines'] = $items;
 
