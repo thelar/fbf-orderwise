@@ -1023,13 +1023,21 @@ class Fbf_Order_Wise_Admin
         if($env_charge){
             $env_gross = 2.5;
             $env_net = round($env_gross/1.2, 2);
-            $items['SalesOrderLine'][] = [
+            /*$items['SalesOrderLine'][] = [
                 'Code' => 'ENV',
                 'Quantity' => 1,
                 'ItemGross' => $env_gross,
                 'ItemNet' => $env_net,
                 'TaxCode' => $tax_code,
                 'Direct' => 'false'
+            ];*/
+
+            $new_format['Dissurs']['SalesDissur'][] = [
+                'Description' => 'ENVCHARGE',
+                'Price' => $env_net,
+                'TaxCode' => 'T1',
+                'GrossDiscount' => 0,
+                'Discount' => 'N',
             ];
 
             // Add ENV to totals
@@ -1178,37 +1186,31 @@ class Fbf_Order_Wise_Admin
         }
 
         if($c_price > 0 && $f_price > 0){
-            $new_format['Dissurs']['SalesDissur'] = [
-                [
-                    'Description' => $c_name,
-                    'Price' => $c_price,
-                    'TaxCode' => $tax_code,
-                    'GrossDiscount' => 'false'
-                ],
-                [
-                    'Description' => $f_name,
-                    'Price' => $f_price,
-                    'TaxCode' => $tax_code,
-                    'GrossDiscount' => 'false'
-                ]
+            $new_format['Dissurs']['SalesDissur'][] = [
+                'Description' => $c_name,
+                'Price' => $c_price,
+                'TaxCode' => $tax_code,
+                'GrossDiscount' => 'false'
+            ];
+            $new_format['Dissurs']['SalesDissur'][] = [
+                'Description' => $f_name,
+                'Price' => $f_price,
+                'TaxCode' => $tax_code,
+                'GrossDiscount' => 'false'
             ];
         }else if($f_price > 0){
-            $new_format['Dissurs'] = [
-                'SalesDissur' => [
-                    'Description' => $f_name,
-                    'Price' => $f_price,
-                    'TaxCode' => $tax_code,
-                    'GrossDiscount' => 'false'
-                ]
+            $new_format['Dissurs']['SalesDissur'][] = [
+                'Description' => $f_name,
+                'Price' => $f_price,
+                'TaxCode' => $tax_code,
+                'GrossDiscount' => 'false'
             ];
         }else if($c_price > 0){
-            $new_format['Dissurs'] = [
-                'SalesDissur' => [
-                    'Description' => $c_name,
-                    'Price' => $c_price,
-                    'TaxCode' => $tax_code,
-                    'GrossDiscount' => 'false'
-                ]
+            $new_format['Dissurs']['SalesDissur'][] = [
+                'Description' => $c_name,
+                'Price' => $c_price,
+                'TaxCode' => $tax_code,
+                'GrossDiscount' => 'false'
             ];
         }
 
