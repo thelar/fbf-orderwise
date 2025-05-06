@@ -331,8 +331,10 @@ class Fbf_Order_Wise_Api
                                     $email_new_order = WC()->mailer()->get_emails()['WC_Order_Delivery'];
                                     $email_new_order->set_tracking($this->get_delivery_note($orderxml->deliveries));
                                     $email_new_order->set_tracking_link($this->get_tracking_links($orderxml->deliveries, $order));
+                                    $email_new_order->set_delivery_logo($this->get_delivery_logo($orderxml->deliveries, $order));
                                     $email_new_order->set_help_text($this->get_help_text($orderxml->deliveries, $order));
                                     $email_new_order->set_courier_to($this->get_courier_name($orderxml->deliveries, $order));
+                                    $email_new_order->set_test_mode(true);
 
                                     // Sending the new Order email notification for an $order_id (order ID)
                                     $email_new_order->trigger( $order->get_order_number() );
@@ -423,14 +425,14 @@ class Fbf_Order_Wise_Api
             $del_date = (string)$delivery->deliveryDate;
             $del_courier_name = (string)$delivery->courierName;
 
-            $delivery_note.= sprintf('Delivery number: %s' . $eol, $del_num);
-            $delivery_note.= sprintf('Dispatch date: %s' . $eol, $del_date);
-            $delivery_note.= sprintf('Courier: %s' . $eol, $del_courier_name);
+            $delivery_note.= sprintf('<strong>Delivery number:</strong> %s' . $eol, $del_num);
+            $delivery_note.= sprintf('<strong>Dispatch date:</strong> %s' . $eol, $del_date);
+            $delivery_note.= sprintf('<strong>Courier:</strong> %s' . $eol, $del_courier_name);
 
             foreach($delivery->consignmentNumbers as $consignmentNumber){
                 $del_consignment_num = (string)$consignmentNumber->consignmentNumber;
 
-                $delivery_note.= sprintf('Consignment: %s' . $eol, $del_consignment_num);
+                $delivery_note.= sprintf('<strong>Consignment:</strong> %s' . $eol, $del_consignment_num);
             }
         }
         return $delivery_note;
@@ -438,13 +440,25 @@ class Fbf_Order_Wise_Api
 
     private function get_tracking_links($deliveries, \WC_Order $order)
     {
-        $link_html = '<a href="%s">this link</a>';
         $consignment_number = (string)$deliveries->consignmentNumbers->consignmentNumber[0];
         $delivery_postcode = preg_replace('/\s+/', '', $order->get_shipping_postcode());
         if($this->get_courier_name($deliveries, $order)==='DX'){
-            return sprintf($link_html, 'https://dx-track.com/track/4X4.aspx?consno='.$consignment_number.'&postcode='.$delivery_postcode);
+            return 'https://dx-track.com/track/4X4.aspx?consno=' . $consignment_number . '&postcode='.$delivery_postcode;
         }else if($this->get_courier_name($deliveries, $order)==='APC'){
-            return sprintf($link_html, 'https://apc-overnight.com/track-parcel.php?id='.$consignment_number.'&postcode'.$delivery_postcode);
+            return 'https://apc-overnight.com/track-parcel.php?id=' . $consignment_number . '&postcode'.$delivery_postcode;
+        }
+    }
+
+    private function get_delivery_logo($deliveries, \WC_Order $order)
+    {
+        $consignment_number = (string)$deliveries->consignmentNumbers->consignmentNumber[0];
+        $delivery_postcode = preg_replace('/\s+/', '', $order->get_shipping_postcode());
+        if($this->get_courier_name($deliveries, $order)==='DX'){
+            $url = sprintf('https://dx-track.com/track/4X4.aspx?consno=%s&postcode=%s', $consignment_number, $delivery_postcode);
+            $logo_html = sprintf('<div style="margin: 0 0 12px;"><a href="%s"><img src="https://4x4tyres.co.uk/app/uploads/email/img/Email_DX_logo.png" alt="DX Logo" width="84" height="42"/></a></div>', $url);
+            return $logo_html;
+        }else{
+            return '';
         }
     }
 
