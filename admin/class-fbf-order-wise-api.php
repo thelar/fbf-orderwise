@@ -334,7 +334,7 @@ class Fbf_Order_Wise_Api
                                     $email_new_order->set_delivery_logo($this->get_delivery_logo($orderxml->deliveries, $order));
                                     $email_new_order->set_help_text($this->get_help_text($orderxml->deliveries, $order));
                                     $email_new_order->set_courier_to($this->get_courier_name($orderxml->deliveries, $order));
-                                    $email_new_order->set_test_mode(true);
+                                    $email_new_order->set_test_mode(false);
 
                                     // Sending the new Order email notification for an $order_id (order ID)
                                     $email_new_order->trigger( $order->get_order_number() );
