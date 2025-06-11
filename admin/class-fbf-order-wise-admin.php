@@ -290,9 +290,12 @@ class Fbf_Order_Wise_Admin
         }
 
         $f_price = 0;
+        $has_ebay_tyre_charge = false;
         foreach($order->get_fees() as $fee){
-            if($fee->get_name()!=='Environmental Charge'){
+            if($fee->get_name()!=='Environmental Charge'&&$fee->get_name()!=='eBay Tyre Delivery'){
                 $f_price+= abs($fee->get_amount());
+            }else if($fee->get_name()==='eBay Tyre Delivery'){
+                $has_ebay_tyre_charge = true;
             }
         }
 
@@ -1045,6 +1048,25 @@ class Fbf_Order_Wise_Admin
                 $new_format['OrderGross']+= $env_gross;
                 $new_format['OrderNet']+= $env_net;
                 $new_format['OrderTax']+= $env_gross-$env_net;
+            }
+        }else{
+            // Handle eBay Tyre Delivery charge
+            if($has_ebay_tyre_charge){
+                $ebay_tyre_charge_gross = 20;
+                $ebay_tyre_charge_net = round($ebay_tyre_charge_gross/1.2, 2);
+
+                $new_format['Dissurs']['SalesDissur'][] = [
+                    'Description' => 'EBAY_TEST',
+                    'Price' => $ebay_tyre_charge_net,
+                    'TaxCode' => 'T1',
+                    'GrossDiscount' => 0,
+                    'Discount' => 'N',
+                ];
+
+                // Add ENV to totals
+                $new_format['OrderGross']+= $ebay_tyre_charge_gross;
+                $new_format['OrderNet']+= $ebay_tyre_charge_net;
+                $new_format['OrderTax']+= $ebay_tyre_charge_gross-$ebay_tyre_charge_net;
             }
         }
 
