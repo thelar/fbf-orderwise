@@ -1056,7 +1056,7 @@ class Fbf_Order_Wise_Admin
                 $ebay_tyre_charge_net = round($ebay_tyre_charge_gross/1.2, 2);
 
                 $new_format['Dissurs']['SalesDissur'][] = [
-                    'Description' => 'EBAYTEST',
+                    'Description' => 'EBAYTYREDELIVERY',
                     'Price' => $ebay_tyre_charge_net,
                     'TaxCode' => 'T1',
                     'GrossDiscount' => 0,
