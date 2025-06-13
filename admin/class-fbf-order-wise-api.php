@@ -325,19 +325,23 @@ class Fbf_Order_Wise_Api
                                 $errors[$order_num][] = 'Could not update status to ' . $order_status;
                             }
 
+
                             if(!empty($this->has_delivery($orderxml->deliveries))){
                                 // Send out the delivery email here
-                                if($this->get_courier_name($orderxml->deliveries, $order)==='DX'||$this->get_courier_name($orderxml->deliveries, $order)==='APC'){
-                                    $email_new_order = WC()->mailer()->get_emails()['WC_Order_Delivery'];
-                                    $email_new_order->set_tracking($this->get_delivery_note($orderxml->deliveries));
-                                    $email_new_order->set_tracking_link($this->get_tracking_links($orderxml->deliveries, $order));
-                                    $email_new_order->set_delivery_logo($this->get_delivery_logo($orderxml->deliveries, $order));
-                                    $email_new_order->set_help_text($this->get_help_text($orderxml->deliveries, $order));
-                                    $email_new_order->set_courier_to($this->get_courier_name($orderxml->deliveries, $order));
-                                    $email_new_order->set_test_mode(false);
+                                $is_national_fitting = get_post_meta($order->get_id(), '_is_national_fitting', true);
+                                if(!$is_national_fitting){ // Only send the delivery email if it's not a Fitting order
+                                    if($this->get_courier_name($orderxml->deliveries, $order)==='DX'||$this->get_courier_name($orderxml->deliveries, $order)==='APC'){
+                                        $email_new_order = WC()->mailer()->get_emails()['WC_Order_Delivery'];
+                                        $email_new_order->set_tracking($this->get_delivery_note($orderxml->deliveries));
+                                        $email_new_order->set_tracking_link($this->get_tracking_links($orderxml->deliveries, $order));
+                                        $email_new_order->set_delivery_logo($this->get_delivery_logo($orderxml->deliveries, $order));
+                                        $email_new_order->set_help_text($this->get_help_text($orderxml->deliveries, $order));
+                                        $email_new_order->set_courier_to($this->get_courier_name($orderxml->deliveries, $order));
+                                        $email_new_order->set_test_mode(false);
 
-                                    // Sending the new Order email notification for an $order_id (order ID)
-                                    $email_new_order->trigger( $order->get_order_number() );
+                                        // Sending the new Order email notification for an $order_id (order ID)
+                                        $email_new_order->trigger( $order->get_order_number() );
+                                    }
                                 }
                                 $order->add_order_note($this->get_delivery_note($orderxml->deliveries, true), false);
                             }
