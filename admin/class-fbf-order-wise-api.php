@@ -284,52 +284,52 @@ class Fbf_Order_Wise_Api
                         }
                         break;
                     case 'Completed':
-                        if($order->get_status()!=='completed'){
-                            if($order->update_status('completed')){
-                                $success[$order_num][] = 'Order status updated to ' . $order_status;
+                        $is_national_fitting = get_post_meta($order->get_id(), '_is_national_fitting', true);
+                        if(!$is_national_fitting){ // Only send the delivery email if it's not a Fitting order
+                            if($order->get_status()!=='completed'){
+                                if($order->update_status('completed')){
+                                    $success[$order_num][] = 'Order status updated to ' . $order_status;
 
-                                // Set the _delivery_info meta for eBay orders only
-                                if(get_post_meta($order->get_id(), '_ebay_order_number', true)){
+                                    // Set the _delivery_info meta for eBay orders only
+                                    if(get_post_meta($order->get_id(), '_ebay_order_number', true)){
 
-                                    //update_post_meta($order->get_id(), '_delivery_info', $orderxml);
+                                        //update_post_meta($order->get_id(), '_delivery_info', $orderxml);
 
-                                    if (is_plugin_active('fbf-ebay-packages/fbf-ebay-packages.php')) {
-                                        require_once plugin_dir_path(WP_PLUGIN_DIR . '/fbf-ebay-packages/fbf-ebay-packages.php') . 'includes/class-fbf-ebay-packages-list-item.php';
-                                        $item = new Fbf_Ebay_Packages_List_Item(null, null);
-                                        $fulfillment = $item->fulfill_order($orderxml, get_post_meta($order->get_id(), '_ebay_order_number', true));
+                                        if (is_plugin_active('fbf-ebay-packages/fbf-ebay-packages.php')) {
+                                            require_once plugin_dir_path(WP_PLUGIN_DIR . '/fbf-ebay-packages/fbf-ebay-packages.php') . 'includes/class-fbf-ebay-packages-list-item.php';
+                                            $item = new Fbf_Ebay_Packages_List_Item(null, null);
+                                            $fulfillment = $item->fulfill_order($orderxml, get_post_meta($order->get_id(), '_ebay_order_number', true));
+                                        }
+
+                                        $subject = sprintf('OrderWise eBay fulfillment report for order: %s', $order->get_id());
+                                        $from = 'website@4x4tyres.co.uk';
+                                        $to = 'kevin.price-ward@4x4tyres.co.uk,josh.barbor@4x4tyres.co.uk';
+
+                                        $headers = "From: 4x4 Website <" . $from . '>' . PHP_EOL;
+                                        $headers.= "Reply-To: " . $from . PHP_EOL;
+                                        $headers .= "MIME-Version: 1.0" . PHP_EOL;
+                                        $headers .= "Content-Type: text/html; charset=ISO-8859-1" . PHP_EOL;
+
+                                        $message = sprintf('<h1>eBay order number: <strong>%s</strong></h1>', get_post_meta($order->get_id(), '_ebay_order_number', true));
+
+                                        if($fulfillment){
+                                            ob_start();
+                                            echo '<pre>';
+                                            print_r($fulfillment);
+                                            echo '</pre>';
+                                            $message.= ob_get_clean();
+                                        }else{
+                                            $message.= sprintf('<p>%s</p>', '$fulfillment not set');
+                                        }
+                                        wp_mail($to, $subject, $message, $headers);
                                     }
-
-                                    $subject = sprintf('OrderWise eBay fulfillment report for order: %s', $order->get_id());
-                                    $from = 'website@4x4tyres.co.uk';
-                                    $to = 'kevin.price-ward@4x4tyres.co.uk,josh.barbor@4x4tyres.co.uk';
-
-                                    $headers = "From: 4x4 Website <" . $from . '>' . PHP_EOL;
-                                    $headers.= "Reply-To: " . $from . PHP_EOL;
-                                    $headers .= "MIME-Version: 1.0" . PHP_EOL;
-                                    $headers .= "Content-Type: text/html; charset=ISO-8859-1" . PHP_EOL;
-
-                                    $message = sprintf('<h1>eBay order number: <strong>%s</strong></h1>', get_post_meta($order->get_id(), '_ebay_order_number', true));
-
-                                    if($fulfillment){
-                                        ob_start();
-                                        echo '<pre>';
-                                        print_r($fulfillment);
-                                        echo '</pre>';
-                                        $message.= ob_get_clean();
-                                    }else{
-                                        $message.= sprintf('<p>%s</p>', '$fulfillment not set');
-                                    }
-                                    wp_mail($to, $subject, $message, $headers);
+                                }else{
+                                    $errors[$order_num][] = 'Could not update status to ' . $order_status;
                                 }
-                            }else{
-                                $errors[$order_num][] = 'Could not update status to ' . $order_status;
-                            }
 
 
-                            if(!empty($this->has_delivery($orderxml->deliveries))){
-                                // Send out the delivery email here
-                                $is_national_fitting = get_post_meta($order->get_id(), '_is_national_fitting', true);
-                                if(!$is_national_fitting){ // Only send the delivery email if it's not a Fitting order
+                                if(!empty($this->has_delivery($orderxml->deliveries))){
+                                    // Send out the delivery email here
                                     if($this->get_courier_name($orderxml->deliveries, $order)==='DX'||$this->get_courier_name($orderxml->deliveries, $order)==='APC'){
                                         $email_new_order = WC()->mailer()->get_emails()['WC_Order_Delivery'];
                                         $email_new_order->set_tracking($this->get_delivery_note($orderxml->deliveries));
@@ -342,13 +342,17 @@ class Fbf_Order_Wise_Api
                                         // Sending the new Order email notification for an $order_id (order ID)
                                         $email_new_order->trigger( $order->get_order_number() );
                                     }
+                                    $order->add_order_note($this->get_delivery_note($orderxml->deliveries, true), false);
                                 }
-                                $order->add_order_note($this->get_delivery_note($orderxml->deliveries, true), false);
+                            }else{
+                                $errors[$order_num][] = 'Order status is already completed';
                             }
                         }else{
-                            $errors[$order_num][] = 'Order status is already completed';
+                            if(!empty($this->has_delivery($orderxml->deliveries))){
+                                $order->add_order_note($this->get_delivery_note($orderxml->deliveries, true), false);
+                                $order->add_order_note('Fitting order so not setting status to Completed', false);
+                            }
                         }
-
                         break;
                     default:
                         $errors[$order_num][] = $order_status . ' is not catered for';
