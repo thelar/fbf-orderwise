@@ -355,6 +355,7 @@ class Fbf_Order_Wise_Admin
         $msg.='Sales Order Number: ' . $order->get_id() . PHP_EOL;
         $msg.='Customer name: ' . $order->get_formatted_billing_full_name() . PHP_EOL;
         $msg.= $order->get_customer_note() . PHP_EOL;
+        $msg.='Vehicle Reg: ' . $order->get_meta('_reg_no') . PHP_EOL;
 
         //Name is either the company name or if not set the persons name
         $name = $order->get_billing_company()?:$order->get_formatted_billing_full_name();
