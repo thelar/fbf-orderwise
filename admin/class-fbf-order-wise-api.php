@@ -343,6 +343,13 @@ class Fbf_Order_Wise_Api
                                         $email_new_order->trigger( $order->get_order_number() );
                                     }
                                     $order->add_order_note($this->get_delivery_note($orderxml->deliveries, true), false);
+                                }else{
+                                    // Here when we need to send an 'order complete' email for mailorder orders but we don't have tracking info - e.g. when the order is fulfilled by a supplier
+                                    $email_new_order = WC()->mailer()->get_emails()['WC_Order_Complete'];
+                                    $email_new_order->set_test_mode(true);
+                                    $email_new_order->trigger( $order->get_order_number() );
+
+                                    $order->add_order_note('Order completed without Tracking', false);
                                 }
                             }else{
                                 $errors[$order_num][] = 'Order status is already completed';
@@ -350,8 +357,8 @@ class Fbf_Order_Wise_Api
                         }else{
                             if(!empty($this->has_delivery($orderxml->deliveries))){
                                 $order->add_order_note($this->get_delivery_note($orderxml->deliveries, true), false);
-                                $order->add_order_note('Fitting order so not setting status to Completed', false);
                             }
+                            $order->add_order_note('Fitting order so not setting status to Completed', false);
                         }
                         break;
                     default:
