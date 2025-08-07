@@ -346,7 +346,7 @@ class Fbf_Order_Wise_Api
                                 }else{
                                     // Here when we need to send an 'order complete' email for mailorder orders but we don't have tracking info - e.g. when the order is fulfilled by a supplier
                                     $email_new_order = WC()->mailer()->get_emails()['WC_Order_Complete'];
-                                    $email_new_order->set_test_mode(true);
+                                    $email_new_order->set_test_mode(false);
                                     $email_new_order->trigger( $order->get_order_number() );
 
                                     $order->add_order_note('Order completed without Tracking', false);
