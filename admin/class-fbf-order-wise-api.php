@@ -1,6 +1,6 @@
 <?php
 
-
+#[\AllowDynamicProperties]
 class Fbf_Order_Wise_Api
 {
 
