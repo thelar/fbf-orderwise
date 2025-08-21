@@ -187,7 +187,7 @@ class Fbf_Order_Wise_Api
                 // mark the received order numbers as status == processing
                 if ($order) {
                     $order_status = $order->get_status();
-                    if($order_status==='proccessing'){
+                    if($order_status==='processing'){
                         $order->update_status('imported');
                         $completed[] = $order_id;
                         $response['completed'][] = $order_id;
@@ -328,22 +328,22 @@ class Fbf_Order_Wise_Api
                                 }
 
 
-                                if(!empty($this->has_delivery($orderxml->deliveries))){
-                                    // Send out the delivery email here
-                                    if($this->get_courier_name($orderxml->deliveries, $order)==='DX'||$this->get_courier_name($orderxml->deliveries, $order)==='APC'){
-                                        $email_new_order = WC()->mailer()->get_emails()['WC_Order_Delivery'];
-                                        $email_new_order->set_tracking($this->get_delivery_note($orderxml->deliveries));
-                                        $email_new_order->set_tracking_link($this->get_tracking_links($orderxml->deliveries, $order));
-                                        $email_new_order->set_delivery_logo($this->get_delivery_logo($orderxml->deliveries, $order));
-                                        $email_new_order->set_help_text($this->get_help_text($orderxml->deliveries, $order));
-                                        $email_new_order->set_courier_to($this->get_courier_name($orderxml->deliveries, $order));
-                                        $email_new_order->set_test_mode(false);
+								if(isset($orderxml->deliveries)){
+									// Send out the delivery email here
+									if($this->get_courier_name($orderxml->deliveries, $order)==='DX'||$this->get_courier_name($orderxml->deliveries, $order)==='APC'){
+										$email_new_order = WC()->mailer()->get_emails()['WC_Order_Delivery'];
+										$email_new_order->set_tracking($this->get_delivery_note($orderxml->deliveries));
+										$email_new_order->set_tracking_link($this->get_tracking_links($orderxml->deliveries, $order));
+										$email_new_order->set_delivery_logo($this->get_delivery_logo($orderxml->deliveries, $order));
+										$email_new_order->set_help_text($this->get_help_text($orderxml->deliveries, $order));
+										$email_new_order->set_courier_to($this->get_courier_name($orderxml->deliveries, $order));
+										$email_new_order->set_test_mode(false);
 
-                                        // Sending the new Order email notification for an $order_id (order ID)
-                                        $email_new_order->trigger( $order->get_order_number() );
-                                    }
-                                    $order->add_order_note($this->get_delivery_note($orderxml->deliveries, true), false);
-                                }else{
+										// Sending the new Order email notification for an $order_id (order ID)
+										$email_new_order->trigger( $order->get_order_number() );
+									}
+									$order->add_order_note($this->get_delivery_note($orderxml->deliveries, true), false);
+								}else{
                                     // Here when we need to send an 'order complete' email for mailorder orders but we don't have tracking info - e.g. when the order is fulfilled by a supplier
                                     $email_new_order = WC()->mailer()->get_emails()['WC_Order_Complete'];
                                     $email_new_order->set_test_mode(false);
@@ -403,24 +403,6 @@ class Fbf_Order_Wise_Api
                 ],
                 [
                     'id' => $wpdb->insert_id
-                ]
-            );
-        }
-
-        //Log deko response if necessary
-        if($update_deko){
-            ob_start();
-            print_r($curlResponse);
-            $log = ob_get_clean();
-
-
-            $deko_insert = $wpdb->insert(
-                $table_name,
-                [
-                    'starttime' => date('Y-m-d H:i:s', time()),
-                    'endpoint' => 'deko_fulfillment',
-                    'log' => $log,
-                    'response' => $deko_response,
                 ]
             );
         }
@@ -488,20 +470,25 @@ class Fbf_Order_Wise_Api
 
     private function get_courier_name($deliveries, \WC_Order $order)
     {
-        switch((string)$deliveries->courierName){
-            case 'DX':
-            case 'DX DM6 Lite':
-            case 'DX DM6 Lite MTS':
-                $courier_name = 'DX';
-                break;
-            case 'APC_4x4':
-            case 'APC_Oponeo':
-                $courier_name = 'APC';
-                break;
-            default:
-                $courier_name = null;
-                break;
-        }
+		if(isset($deliveries->courierName)){
+			switch((string)$deliveries->courierName){
+				case 'DX':
+				case 'DX DM6 Lite':
+				case 'DX DM6 Lite MTS':
+					$courier_name = 'DX';
+					break;
+				case 'APC_4x4':
+				case 'APC_Oponeo':
+					$courier_name = 'APC';
+					break;
+				default:
+					$courier_name = null;
+					break;
+			}
+		}else{
+			$courier_name = null;
+		}
+
         return $courier_name;
     }
 
