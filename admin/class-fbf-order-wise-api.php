@@ -275,7 +275,7 @@ class Fbf_Order_Wise_Api
                                 $order->add_order_note($this->get_delivery_note($orderxml->deliveries));
                             }*/
 
-                            if(!empty($this->has_delivery($orderxml->deliveries))){
+                            if(isset($orderxml->deliveries)){
                                 $order->add_order_note($this->get_delivery_note($orderxml->deliveries), true);
                             }
 
@@ -327,35 +327,36 @@ class Fbf_Order_Wise_Api
                                     $errors[$order_num][] = 'Could not update status to ' . $order_status;
                                 }
 
+	                            if(!get_post_meta($order->get_id(), '_ebay_order_number', true)){
+		                            if(isset($orderxml->deliveries)){
+			                            // Send out the delivery email here
+			                            if($this->get_courier_name($orderxml->deliveries, $order)==='DX'||$this->get_courier_name($orderxml->deliveries, $order)==='APC'){
+				                            $email_new_order = WC()->mailer()->get_emails()['WC_Order_Delivery'];
+				                            $email_new_order->set_tracking($this->get_delivery_note($orderxml->deliveries));
+				                            $email_new_order->set_tracking_link($this->get_tracking_links($orderxml->deliveries, $order));
+				                            $email_new_order->set_delivery_logo($this->get_delivery_logo($orderxml->deliveries, $order));
+				                            $email_new_order->set_help_text($this->get_help_text($orderxml->deliveries, $order));
+				                            $email_new_order->set_courier_to($this->get_courier_name($orderxml->deliveries, $order));
+				                            $email_new_order->set_test_mode(false);
 
-								if(isset($orderxml->deliveries)){
-									// Send out the delivery email here
-									if($this->get_courier_name($orderxml->deliveries, $order)==='DX'||$this->get_courier_name($orderxml->deliveries, $order)==='APC'){
-										$email_new_order = WC()->mailer()->get_emails()['WC_Order_Delivery'];
-										$email_new_order->set_tracking($this->get_delivery_note($orderxml->deliveries));
-										$email_new_order->set_tracking_link($this->get_tracking_links($orderxml->deliveries, $order));
-										$email_new_order->set_delivery_logo($this->get_delivery_logo($orderxml->deliveries, $order));
-										$email_new_order->set_help_text($this->get_help_text($orderxml->deliveries, $order));
-										$email_new_order->set_courier_to($this->get_courier_name($orderxml->deliveries, $order));
-										$email_new_order->set_test_mode(false);
+				                            // Sending the new Order email notification for an $order_id (order ID)
+				                            $email_new_order->trigger( $order->get_order_number() );
+			                            }
+			                            $order->add_order_note($this->get_delivery_note($orderxml->deliveries, true), false);
+		                            }else{
+			                            // Here when we need to send an 'order complete' email for mailorder orders but we don't have tracking info - e.g. when the order is fulfilled by a supplier
+			                            $email_new_order = WC()->mailer()->get_emails()['WC_Order_Complete'];
+			                            $email_new_order->set_test_mode(false);
+			                            $email_new_order->trigger( $order->get_order_number() );
 
-										// Sending the new Order email notification for an $order_id (order ID)
-										$email_new_order->trigger( $order->get_order_number() );
-									}
-									$order->add_order_note($this->get_delivery_note($orderxml->deliveries, true), false);
-								}else{
-                                    // Here when we need to send an 'order complete' email for mailorder orders but we don't have tracking info - e.g. when the order is fulfilled by a supplier
-                                    $email_new_order = WC()->mailer()->get_emails()['WC_Order_Complete'];
-                                    $email_new_order->set_test_mode(false);
-                                    $email_new_order->trigger( $order->get_order_number() );
-
-                                    $order->add_order_note('Order completed without Tracking', false);
-                                }
+			                            $order->add_order_note('Order completed without Tracking', false);
+		                            }
+	                            }
                             }else{
                                 $errors[$order_num][] = 'Order status is already completed';
                             }
                         }else{
-                            if(!empty($this->has_delivery($orderxml->deliveries))){
+                            if(isset($orderxml->deliveries)){
                                 $order->add_order_note($this->get_delivery_note($orderxml->deliveries, true), false);
                             }
                             $order->add_order_note('Fitting order so not setting status to Completed', false);
