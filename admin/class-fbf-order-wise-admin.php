@@ -572,6 +572,12 @@ class Fbf_Order_Wise_Admin
         $env_charge = false;
         foreach ($order->get_items() as $item_id => $item_data) {
             $product = $order->get_product_from_item($item_data);
+
+	        // skip loop if not product found
+	        if (!$product) {
+		        continue;
+	        }
+
             $product_id = $product->get_parent_id()?:$product->get_id();
 
             /*$taxes = $order->get_taxes();
@@ -603,10 +609,6 @@ class Fbf_Order_Wise_Admin
             //$item_tax = round($item_data->get_subtotal_tax()/$item_data->get_quantity(), 2);
             //$item_gross = $item_net + $item_tax;
 
-            // skip loop if not product found
-            if (!$product) {
-                continue;
-            }
             $cat_term = get_the_terms($product_id, 'product_cat')[0];
 
             if(str_ends_with($product->get_sku(), '_white')){
