@@ -571,14 +571,15 @@ class Fbf_Order_Wise_Admin
         $total_gross = 0;
         $env_charge = false;
         foreach ($order->get_items() as $item_id => $item_data) {
-            $product = $order->get_product_from_item($item_data);
+            //$product = $order->get_product_from_item($item_data);
+	        $product = $item_data->get_product();
 
 	        // skip loop if not product found
 	        if (!$product) {
 		        continue;
 	        }
 
-            $product_id = $product->get_parent_id()?:$product->get_id();
+            $product_id = $product->get_id();
 
             /*$taxes = $order->get_taxes();
             $price_inc_tax = $product->get_regular_price();
@@ -1280,7 +1281,7 @@ class Fbf_Order_Wise_Admin
     function sv_wc_xml_export_order_line_item($item_format, $order, $item)
     {
 
-        $product = is_callable(array($item, 'get_product')) ? $item->get_product() : $order->get_product_from_item($item);
+        $product = $item->get_product();
 
         // Tax code
         if(empty($order->get_taxes())){
@@ -1329,7 +1330,7 @@ class Fbf_Order_Wise_Admin
 
     function sv_wc_xml_export_line_item_addons($item_format, $order, $item)
     {
-        $product = is_callable(array($item, 'get_product')) ? $item->get_product() : $order->get_product_from_item($item);
+        $product = $item->get_product();
         // bail if this line item isn't a product
         // if (!($product && $product->exists())) {
         // 	return $item_format;
