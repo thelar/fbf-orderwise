@@ -1012,7 +1012,7 @@ class Fbf_Order_Wise_Admin
             }
         }else{
             // It's not national fitting
-            if(count($tyre_items)){
+            if(!is_null($tyre_items) && count($tyre_items)){
                 $micheldever = 88;
                 foreach($items['SalesOrderLine'] as $k => $tyre){
                     $product_id = wc_get_product_id_by_sku($tyre['Code']);
