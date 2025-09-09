@@ -275,9 +275,9 @@ class Fbf_Order_Wise_Api
                                 $order->add_order_note($this->get_delivery_note($orderxml->deliveries));
                             }*/
 
-                            if(isset($orderxml->deliveries)){
+                            /*if(isset($orderxml->deliveries)){
                                 $order->add_order_note($this->get_delivery_note($orderxml->deliveries), true);
-                            }
+                            }*/
 
                         }else{
                             $errors[$order_num][] = 'Order status is already awaiting-despatch';
