@@ -868,7 +868,7 @@ class Fbf_Order_Wise_Admin
             $new_format['SpecialDeliveryInstructions'] = $msg;
             $new_format['SpecialInstructions'] = $new_format['SpecialInstructions'] . PHP_EOL . $msg;
 
-            if(count($tyre_items)){
+            if(isset($tyre_items) && count($tyre_items)){
                 // Here if there are tyres in order
                 // Look for Micheldever or Stapletons
                 $micheldever = 88;
