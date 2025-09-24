@@ -757,7 +757,7 @@ class Fbf_Order_Wise_Admin
                 }
             }
 
-            if(count($tyre_items)==count($items['SalesOrderLine'])) { //Checks that every item is a tyre
+            if(isset($tyre_items) && (count($tyre_items)==count($items['SalesOrderLine']))) { //Checks that every item is a tyre
                 $new_format['DeliveryMethod'] = 'Direct Delivery';
             }
         }
