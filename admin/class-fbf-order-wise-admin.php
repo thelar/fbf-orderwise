@@ -1146,6 +1146,9 @@ class Fbf_Order_Wise_Admin
                 case 64108:
                     $f_name = 'sales_discount_ll';
                     break;
+	            case 66718:
+					$f_name = 'sales_discount_lm';
+					break;
                 default:
                     $f_name = 'sales_discount_unknown';
                     break;
@@ -1219,6 +1222,9 @@ class Fbf_Order_Wise_Admin
                     case 'checkdisc_64108':
                         $c_name = 'sales_discount_ll';
                         break;
+	                case 'checkdisc_66718':
+						$c_name = 'sales_discount_lm';
+						break;
                     default:
                         $c_name = 'sales_discount_unknown';
                         break;
