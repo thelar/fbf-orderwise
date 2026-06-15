@@ -389,10 +389,10 @@ class Fbf_Order_Wise_Admin
                     $shipping_method = substr_replace($order->get_shipping_method(), ' residential', 8, 0);
                 }
                 break;
-            case 'Free shipping on orders over £250':
-            case 'Free shipping on orders over £250 (1)':
-            case 'Free shipping on orders over £250 (4)':
-            case 'Free shipping on orders over £250 (5)':
+            case 'Free shipping on orders over £500':
+            case 'Free shipping on orders over £500 (1)':
+            case 'Free shipping on orders over £500 (4)':
+            case 'Free shipping on orders over £500 (5)':
                 if($order->get_meta('_fbf_shipping_address_type') && $order->get_meta('_fbf_shipping_address_type')==='Commercial'){
                     $shipping_method = substr_replace($order->get_shipping_method(), ' commercial', 34, 0);
                 }else{
