@@ -132,7 +132,7 @@ class Fbf_Order_Wise_Api
 
         header('Content-type: ' . $content_type);
         header('Content-Description: File Transfer');
-        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        //header('Content-Disposition: attachment; filename="' . $filename . '"');
         header('Expires: 0');
         header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
         header('Pragma: public');
