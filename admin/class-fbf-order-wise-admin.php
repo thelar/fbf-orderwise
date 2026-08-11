@@ -217,17 +217,26 @@ class Fbf_Order_Wise_Admin
         //$datetime = new DateTime($order->order_date);
         $datetime_o = $order->get_date_created();
         $date = $datetime_o->format("Y-m-d\TH:i:s");
+        $is_national_fitting = (bool) $order->get_meta('_is_national_fitting');
+        $national_fitting_type = $order->get_meta('_national_fitting_type');
+        $national_fitting_garage_id = $order->get_meta('_national_fitting_garage_id');
+        $selected_garage = $order->get_meta('_gs_selected_garage');
+        $ebay_order_number = $order->get_meta('_ebay_order_number');
+        $national_fitting_reg_no = $order->get_meta('_national_fitting_reg_no');
+        $order_analysis = $order->get_meta('_order_analysis');
+        $order_from_quote = $order->get_meta('_order_from_quote');
+        $taken_by_id = $order->get_meta('_taken_by');
 
         // set required and promise dates for national fitting
-        if($order->get_meta('_is_national_fitting')){
+        if($is_national_fitting){
             if($order->get_meta('_gs_selected_garage')){
-                if(strpos($order->get_meta('_gs_selected_garage')['date'], '-')!==false){
+                if(strpos($selected_garage['date'], '-')!==false){
                     $format = 'Y-m-d';
                 }else{
                     $format = 'd/m/y';
                 }
 
-                $required_date = \DateTime::createFromFormat($format, $order->get_meta('_gs_selected_garage')['date']);
+                $required_date = \DateTime::createFromFormat($format, $selected_garage['date']);
                 $required_day = strtolower($required_date->format('l'));
                 $days_of_week = [
                     'monday',
@@ -239,8 +248,8 @@ class Fbf_Order_Wise_Admin
                     'sunday',
                 ];
 
-                /*$search_garage_id = $order->get_meta('_gs_selected_garage')['id'];
-                if(get_post_meta($order->get_ID(), '_national_fitting_type', true)==='fit_on_drive'){
+                /*$search_garage_id = $selected_garage['id'];
+                if($national_fitting_type==='fit_on_drive'){
                     $search_garage_id = 349; // Hardcode HME garage ID for Halfords
                 }*/
 
@@ -325,7 +334,6 @@ class Fbf_Order_Wise_Admin
         }
 
         //Taken by info
-        $taken_by_id = get_post_meta($order->get_id(), '_taken_by', true);
         if($taken_by_id){
             $taken_by = get_user_by('ID', $taken_by_id)->user_email;
         }else{
@@ -333,7 +341,7 @@ class Fbf_Order_Wise_Admin
         }
 
         // handle ebay
-        if(!empty(get_post_meta($order->get_ID(), '_ebay_order_number', true))){
+        if(!empty($ebay_order_number)){
             $taken_by = 'eBay';
         }
 
@@ -405,7 +413,7 @@ class Fbf_Order_Wise_Admin
         }
 
         // handle eBay
-        if(!empty(get_post_meta($order->get_ID(), '_ebay_order_number', true))){
+        if(!empty($ebay_order_number)){
             $shipping_method = 'Standard residential';
         }
 
@@ -429,7 +437,7 @@ class Fbf_Order_Wise_Admin
 
 
         // Take off the Halfords cost if we are using On the drive
-        if(get_post_meta($order->get_ID(), '_national_fitting_type', true)==='fit_on_drive'){
+        if($national_fitting_type==='fit_on_drive'){
             $national_fitting_settings = $this->get_national_fitting_settings();
             $on_the_drive_cost = $national_fitting_settings['on_the_drive_cost'];
             $on_the_drive_inc_tax = $this->get_tax($national_fitting_settings['on_the_drive_cost']);
@@ -444,8 +452,8 @@ class Fbf_Order_Wise_Admin
         }
 
         // ebay orders
-        if(!empty(get_post_meta($order->get_ID(), '_ebay_order_number', true))){
-            $msg.= 'eBay order number: ' . get_post_meta($order->get_ID(), '_ebay_order_number', true) . PHP_EOL;
+        if(!empty($ebay_order_number)){
+            $msg.= 'eBay order number: ' . $ebay_order_number . PHP_EOL;
         }
 
 
@@ -454,7 +462,7 @@ class Fbf_Order_Wise_Admin
             // 'OrderNumber' => get_post_meta($order->id, '_order_number', true),
             'OrderNumber' => $order->get_id(),
             'OrderDate' => $date,
-            'OrderAnalysis' => get_post_meta($order->get_id(), '_order_analysis', true),
+            'OrderAnalysis' => $order_analysis,
             'SpecialInstructions' => $msg,
             'CustomerOrderRef' => $order->get_id(),
             'DeliveryMethod' => $shipping_method,
@@ -553,7 +561,7 @@ class Fbf_Order_Wise_Admin
         }
 
         // handle ebay
-        if(!empty(get_post_meta($order->get_ID(), '_ebay_order_number', true))){
+        if(!empty($ebay_order_number)){
             $payment_method = 'Ebay (TGC Auto Account)';
         }
 
@@ -808,10 +816,10 @@ class Fbf_Order_Wise_Admin
 
 
         // Handle national fitting here
-        if(get_post_meta($order->get_ID(), '_is_national_fitting', true)){
+        if($is_national_fitting){
             $msg = '';
             // Part 1
-            if(get_post_meta($order->get_ID(), '_national_fitting_type', true)==='fit_on_drive'){
+            if($national_fitting_type==='fit_on_drive'){
                 $fitting_method = 'National Fitting (On the drive)';
 
                 // Need to set the delivery address to the Hub address which is in the hubs.xlxs sheet
@@ -844,14 +852,14 @@ class Fbf_Order_Wise_Admin
                 }
 
                 $msg.= 'Fitting address: ' . $order->get_formatted_shipping_address() . PHP_EOL . 'Halfords Booking reference: ' . $order->get_meta('_national_fitting_fod_booking_ref') . PHP_EOL;
-                $msg.= sprintf('To be fitted to vehicle reg %s'.PHP_EOL, get_post_meta($order->get_ID(), '_national_fitting_reg_no', true));
+                $msg.= sprintf('To be fitted to vehicle reg %s'.PHP_EOL, $national_fitting_reg_no);
                 $msg = str_replace('<br/>', PHP_EOL, $msg);
 
-            }else if(get_post_meta($order->get_ID(), '_national_fitting_type', true)==='garage'){
+            }else if($national_fitting_type==='garage'){
                 $fitting_method = 'National Fitting (Garage)';
 
                 // Adds message to comments - garage specific
-                $msg.= sprintf('Please mark the goods for the attention of 4x4tyres.co.uk'.PHP_EOL.'To be fitted to vehicle reg %s'.PHP_EOL, get_post_meta($order->get_ID(), '_national_fitting_reg_no', true));
+                $msg.= sprintf('Please mark the goods for the attention of 4x4tyres.co.uk'.PHP_EOL.'To be fitted to vehicle reg %s'.PHP_EOL, $national_fitting_reg_no);
 
                 // $contracts_agreed_col = 104; //Column DA
                 if(!$garage_a->contracts_agreed){
@@ -893,7 +901,7 @@ class Fbf_Order_Wise_Admin
                 }
 
                 // Handle the OrderOnHold status
-                if(get_post_meta($order->get_ID(), '_national_fitting_type', true)==='garage'){
+                if($national_fitting_type==='garage'){
                     $contracts_agreed_col = 104; //Column DA
                     if(!$garage_a->contracts_agreed){
                         $new_format['OrderOnHold'] = 'true';
@@ -941,7 +949,7 @@ class Fbf_Order_Wise_Admin
                     }
                 }
             }
-            if(get_post_meta($order->get_ID(), '_national_fitting_type', true)==='garage'||get_post_meta($order->get_ID(), '_national_fitting_type', true)==='fit_on_drive'){
+                if($national_fitting_type==='garage'||$national_fitting_type==='fit_on_drive'){
                 if(!empty($fitting_sizes)){
                     foreach($fitting_sizes as $fk => $fitting_size){
                         if(isset($fitting_size['tyre'])&&isset($fitting_size['wheel'])){
@@ -985,7 +993,7 @@ class Fbf_Order_Wise_Admin
                 }
             }
 
-            if(get_post_meta($order->get_ID(), '_national_fitting_type', true)==='fit_on_drive'){
+            if($national_fitting_type==='fit_on_drive'){
                 // Simply add a line item for HME
                 $zones = \WC_Shipping_Zones::get_zones();
                 $settings = $this->get_national_fitting_settings();
@@ -1027,7 +1035,7 @@ class Fbf_Order_Wise_Admin
         }
 
         // Handle Environmental Charge
-        if(empty(get_post_meta($order->get_ID(), '_ebay_order_number', true))){ // Only add ENV charge if order is NOT eBay
+        if(empty($ebay_order_number)){ // Only add ENV charge if order is NOT eBay
             if($env_charge){
                 $env_gross = 2.5;
                 $env_net = round($env_gross/1.2, 2);
@@ -1083,12 +1091,13 @@ class Fbf_Order_Wise_Admin
         }
 
         if($f_price > 0){
-            $order_from = get_post_meta($order->get_ID(), '_order_from_quote', true);
-            $sales_id = get_post_meta($order_from, '_taken_by', true);
+            $order_from = $order_from_quote;
+            $quote_order = $order_from ? wc_get_order($order_from) : null;
+            $sales_id = $quote_order ? $quote_order->get_meta('_taken_by') : '';
 
             //Add this in case $sales_id is empty which can cause sales_discount_unknown and OW errors
             if(empty($sales_id)){
-                $sales_id =  get_post_meta($order->get_ID(), '_taken_by', true);
+                $sales_id = $taken_by_id;
             }
 
             switch($sales_id){

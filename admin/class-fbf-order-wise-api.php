@@ -257,6 +257,8 @@ class Fbf_Order_Wise_Api
                     $errors[$order_num][] = 'No such orderNo exists';
                     break;
                 }else{
+                    $is_national_fitting = (bool) $order->get_meta('_is_national_fitting');
+                    $ebay_order_number = $order->get_meta('_ebay_order_number');
                     $success[$order_num][] = 'Order exists';
                 }
 
@@ -284,21 +286,20 @@ class Fbf_Order_Wise_Api
                         }
                         break;
                     case 'Completed':
-                        $is_national_fitting = get_post_meta($order->get_id(), '_is_national_fitting', true);
                         if(!$is_national_fitting){ // Only send the delivery email if it's not a Fitting order
                             if($order->get_status()!=='completed'){
                                 if($order->update_status('completed')){
                                     $success[$order_num][] = 'Order status updated to ' . $order_status;
 
                                     // Set the _delivery_info meta for eBay orders only
-                                    if(get_post_meta($order->get_id(), '_ebay_order_number', true)){
+                                    if($ebay_order_number){
 
                                         //update_post_meta($order->get_id(), '_delivery_info', $orderxml);
 
                                         if (is_plugin_active('fbf-ebay-packages/fbf-ebay-packages.php')) {
                                             require_once plugin_dir_path(WP_PLUGIN_DIR . '/fbf-ebay-packages/fbf-ebay-packages.php') . 'includes/class-fbf-ebay-packages-list-item.php';
                                             $item = new Fbf_Ebay_Packages_List_Item(null, null);
-                                            $fulfillment = $item->fulfill_order($orderxml, get_post_meta($order->get_id(), '_ebay_order_number', true));
+                                            $fulfillment = $item->fulfill_order($orderxml, $ebay_order_number);
                                         }
 
                                         $subject = sprintf('OrderWise eBay fulfillment report for order: %s', $order->get_id());
@@ -310,7 +311,7 @@ class Fbf_Order_Wise_Api
                                         $headers .= "MIME-Version: 1.0" . PHP_EOL;
                                         $headers .= "Content-Type: text/html; charset=ISO-8859-1" . PHP_EOL;
 
-                                        $message = sprintf('<h1>eBay order number: <strong>%s</strong></h1>', get_post_meta($order->get_id(), '_ebay_order_number', true));
+                                        $message = sprintf('<h1>eBay order number: <strong>%s</strong></h1>', $ebay_order_number);
 
                                         if($fulfillment){
                                             ob_start();
@@ -327,7 +328,7 @@ class Fbf_Order_Wise_Api
                                     $errors[$order_num][] = 'Could not update status to ' . $order_status;
                                 }
 
-	                            if(!get_post_meta($order->get_id(), '_ebay_order_number', true)){
+	                            if(!$ebay_order_number){
 		                            if(isset($orderxml->deliveries)){
 			                            // Send out the delivery email here
 			                            if($this->get_courier_name($orderxml->deliveries, $order)==='DX'||$this->get_courier_name($orderxml->deliveries, $order)==='APC'){
