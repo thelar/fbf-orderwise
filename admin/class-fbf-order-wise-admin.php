@@ -282,6 +282,50 @@ class Fbf_Order_Wise_Admin
                 $promise_date->modify('+3 day');
                 $promise_date->setTime(0, 0, 0);
             }
+        }else if($order->get_status()==='on-backorder'){
+            // If it's a backorder, use the latest expected back in stock date from the backordered items.
+            $latest_backorder_date = null;
+            foreach($order->get_items() as $item){
+                if(!method_exists($item, 'get_product')){
+                    continue;
+                }
+
+                $product = $item->get_product();
+                if(!($product && $product->exists())){
+                    continue;
+                }
+
+                if(!$product->is_on_backorder($item->get_quantity())){
+                    continue;
+                }
+
+                $back_in_stock_date = $this->get_expected_back_in_stock_date_for_product($product);
+                if(!$back_in_stock_date){
+                    continue;
+                }
+
+                if(!($back_in_stock_date instanceof \DateTime)){
+                    try{
+                        $back_in_stock_date = new \DateTime($back_in_stock_date);
+                    }catch(\Exception $e){
+                        continue;
+                    }
+                }
+
+                $back_in_stock_date->setTime(0, 0, 0);
+
+                if(!$latest_backorder_date || $back_in_stock_date > $latest_backorder_date){
+                    $latest_backorder_date = clone $back_in_stock_date;
+                }
+            }
+
+            if($latest_backorder_date){
+                $promise_date = $latest_backorder_date;
+            }else{
+                $promise_date = new \DateTime();
+                $promise_date->modify('+3 day');
+                $promise_date->setTime(0, 0, 0);
+            }
         }else if($order->get_meta('_gs_selected_date')){
             $promise_date = new DateTime($order->get_meta('_gs_selected_date'));
             $promise_date->setTime(0, 0, 0);
@@ -1416,6 +1460,26 @@ class Fbf_Order_Wise_Admin
                 break;
         }
         return $supplier;
+    }
+
+    private function get_expected_back_in_stock_date_for_product($product)
+    {
+        $back_in_stock_date = $product->get_meta('_expected_back_in_stock_date', true);
+        if(!empty($back_in_stock_date)){
+            return $back_in_stock_date;
+        }
+
+        if(method_exists($product, 'get_parent_id') && $product->get_parent_id()){
+            $parent_product = wc_get_product($product->get_parent_id());
+            if($parent_product){
+                $back_in_stock_date = $parent_product->get_meta('_expected_back_in_stock_date', true);
+                if(!empty($back_in_stock_date)){
+                    return $back_in_stock_date;
+                }
+            }
+        }
+
+        return false;
     }
 }
 
