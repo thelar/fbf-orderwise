@@ -342,6 +342,20 @@ class Fbf_Order_Wise_Api
 
 				                            // Sending the new Order email notification for an $order_id (order ID)
 				                            $email_new_order->trigger( $order->get_order_number() );
+			                            }else if($this->get_courier_name($orderxml->deliveries, $order)==='Palletways'){
+											// Check for tracking number
+				                            if(!empty((string)$orderxml->deliveries->consignmentNumbers->consignmentNumber[0])){
+					                            $email_new_order = WC()->mailer()->get_emails()['WC_Order_Delivery'];
+					                            $email_new_order->set_tracking($this->get_delivery_note($orderxml->deliveries));
+					                            $email_new_order->set_tracking_link($this->get_tracking_links($orderxml->deliveries, $order));
+					                            $email_new_order->set_delivery_logo($this->get_delivery_logo($orderxml->deliveries, $order));
+					                            $email_new_order->set_help_text($this->get_help_text($orderxml->deliveries, $order));
+					                            $email_new_order->set_courier_to($this->get_courier_name($orderxml->deliveries, $order));
+					                            $email_new_order->set_test_mode(false);
+
+					                            // Sending the new Order email notification for an $order_id (order ID)
+					                            $email_new_order->trigger( $order->get_order_number() );
+				                            }
 			                            }
 			                            $order->add_order_note($this->get_delivery_note($orderxml->deliveries, true), false);
 		                            }else{
@@ -445,6 +459,8 @@ class Fbf_Order_Wise_Api
             return 'https://dx-track.com/track/4X4.aspx?consno=' . $consignment_number . '&postcode='.$delivery_postcode;
         }else if($this->get_courier_name($deliveries, $order)==='APC'){
             return 'https://apc-overnight.com/track-parcel.php?id=' . $consignment_number . '&postcode'.$delivery_postcode;
+        }else if($this->get_courier_name($deliveries, $order)==='Palletways'){
+			return 'https://track2.palletways.com/?dc_syscon=' . $consignment_number;
         }
     }
 
@@ -452,10 +468,16 @@ class Fbf_Order_Wise_Api
     {
         $consignment_number = (string)$deliveries->consignmentNumbers->consignmentNumber[0];
         $delivery_postcode = preg_replace('/\s+/', '', $order->get_shipping_postcode());
-        if($this->get_courier_name($deliveries, $order)==='DX'){
-            $url = sprintf('https://dx-track.com/track/4X4.aspx?consno=%s&postcode=%s', $consignment_number, $delivery_postcode);
-            $logo_html = sprintf('<div style="margin: 0 0 12px;"><a href="%s"><img src="https://4x4tyres.co.uk/app/uploads/email/img/Email_DX_logo.png" alt="DX Logo" width="84" height="42"/></a></div>', $url);
-            return $logo_html;
+        if($this->get_courier_name($deliveries, $order)==='DX') {
+	        $url       = sprintf( 'https://dx-track.com/track/4X4.aspx?consno=%s&postcode=%s', $consignment_number, $delivery_postcode );
+	        $logo_html = sprintf( '<div style="margin: 0 0 12px;"><a href="%s"><img src="https://4x4tyres.co.uk/app/uploads/email/img/Email_DX_logo.png" alt="DX Logo" width="84" height="42"/></a></div>', $url );
+
+	        return $logo_html;
+        }else if($this->get_courier_name($deliveries, $order)==='Palletways'){
+	        $url       = sprintf( 'https://track2.palletways.com/?dc_syscon=%s', $consignment_number );
+	        $logo_html = sprintf( '<div style="margin: 0 0 12px;"><a href="%s"><img src="https://4x4tyres.co.uk/app/uploads/email/img/pw_logo.png" alt="Palletways Logo" width="147" height="42"/></a></div>', $url );
+
+			return $logo_html;
         }else{
             return '';
         }
@@ -482,6 +504,9 @@ class Fbf_Order_Wise_Api
 				case 'APC_4x4':
 				case 'APC_Oponeo':
 					$courier_name = 'APC';
+					break;
+				case 'Palletways':
+					$courier_name = 'Palletways';
 					break;
 				default:
 					$courier_name = null;
