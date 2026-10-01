@@ -456,7 +456,7 @@ class Fbf_Order_Wise_Api
         $consignment_number = (string)$deliveries->consignmentNumbers->consignmentNumber[0];
         $delivery_postcode = preg_replace('/\s+/', '', $order->get_shipping_postcode());
         if($this->get_courier_name($deliveries, $order)==='DX'){
-            return 'https://dx-track.com/track/4X4.aspx?consno=' . $consignment_number . '&postcode='.$delivery_postcode;
+            return 'https://dx-track.com/track/Track.aspx?consno=' . $consignment_number . '&postcode='.$delivery_postcode;
         }else if($this->get_courier_name($deliveries, $order)==='APC'){
             return 'https://apc-overnight.com/track-parcel.php?id=' . $consignment_number . '&postcode'.$delivery_postcode;
         }else if($this->get_courier_name($deliveries, $order)==='Palletways'){
@@ -469,7 +469,7 @@ class Fbf_Order_Wise_Api
         $consignment_number = (string)$deliveries->consignmentNumbers->consignmentNumber[0];
         $delivery_postcode = preg_replace('/\s+/', '', $order->get_shipping_postcode());
         if($this->get_courier_name($deliveries, $order)==='DX') {
-	        $url       = sprintf( 'https://dx-track.com/track/4X4.aspx?consno=%s&postcode=%s', $consignment_number, $delivery_postcode );
+	        $url       = sprintf( 'https://dx-track.com/track/Track.aspx?consno=%s&postcode=%s', $consignment_number, $delivery_postcode );
 	        $logo_html = sprintf( '<div style="margin: 0 0 12px;"><a href="%s"><img src="https://4x4tyres.co.uk/app/uploads/email/img/Email_DX_logo.png" alt="DX Logo" width="84" height="42"/></a></div>', $url );
 
 	        return $logo_html;
