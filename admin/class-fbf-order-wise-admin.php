@@ -415,6 +415,9 @@ class Fbf_Order_Wise_Admin
 
         //Shipping
         switch($order->get_shipping_method()) {
+            case 'International Shipping':
+                $shipping_method = 'UPS shipping';
+                break;
             case 'International economy':
                 $shipping_method = 'FedEx International economy';
                 break;
